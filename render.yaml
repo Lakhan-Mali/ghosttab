@@ -1,5 +1,6 @@
 # Render Blueprint — one-click deploy of GhostTab AI to Render free tier.
 # Docs: https://render.com/docs/blueprint-spec
+# Render Blueprint — GhostTab AI
 services:
   - type: web
     name: ghosttab-ai
@@ -13,15 +14,9 @@ services:
       - key: DJANGO_DEBUG
         value: "False"
       - key: DJANGO_ALLOWED_HOSTS
-        fromService:
-          type: web
-          name: ghosttab-ai
-          property: hostname
+        value: "ghosttab-ai.onrender.com"
       - key: CSRF_TRUSTED_ORIGINS
-        fromService:
-          type: web
-          name: ghosttab-ai
-          property: host
+        value: "https://ghosttab-ai.onrender.com"
       - key: AI_PROVIDER
         value: demo
       - key: PYTHON_VERSION
