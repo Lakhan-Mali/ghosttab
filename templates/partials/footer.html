@@ -1,0 +1,65 @@
+<footer class="gt-footer">
+  <div class="gt-container">
+    <div class="gt-footer-grid">
+      <div class="gt-footer-brand">
+        <div class="gt-brand">
+          <span class="gt-brand-mark" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+              <path d="M4 4 H18 V8 H14 V18 H8 V8 H4 Z" fill="url(#gt-foot-grad)"/>
+              <defs>
+                <linearGradient id="gt-foot-grad" x1="0" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#8a5cf6"/>
+                  <stop offset="1" stop-color="#5eead4"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </span>
+          <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+        </div>
+        <p class="gt-muted gt-footer-tagline">Pick up where your mind left off.</p>
+      </div>
+      <div class="gt-footer-col">
+        <h4 class="gt-footer-h">Product</h4>
+        <a href="/#features">Features</a>
+        <a href="/#how">How It Works</a>
+        <a href="/demo/">Demo</a>
+      </div>
+      <div class="gt-footer-col">
+        <h4 class="gt-footer-h">Account</h4>
+        {% if user.is_authenticated %}
+          <a href="/app/">Workspace</a>
+          <a href="/auth/settings/">Settings</a>
+          <a href="/auth/logout/">Sign Out</a>
+        {% else %}
+          <a href="/auth/login/">Sign In</a>
+          <a href="/auth/signup/">Sign Up</a>
+        {% endif %}
+      </div>
+      <div class="gt-footer-col">
+        <h4 class="gt-footer-h">Trust</h4>
+        <a href="/privacy/">Privacy</a>
+        <a href="/privacy/#data">Data handling</a>
+        <a href="/privacy/#deletion">Delete your data</a>
+      </div>
+    </div>
+    <div class="gt-footer-bottom">
+      <span class="gt-soft">© 2026 GhostTab AI. All rights reserved.</span>
+      <span class="gt-soft gt-mono">v1.0 · Django + Tailwind</span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .gt-footer { background: var(--gt-bg-elev-1); border-top: 1px solid var(--gt-border); padding: var(--gt-space-8) 0 var(--gt-space-6); margin-top: var(--gt-space-9); }
+  .gt-footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: var(--gt-space-6); }
+  .gt-footer-tagline { margin-top: var(--gt-space-3); font-size: 0.9rem; }
+  .gt-footer-col { display: flex; flex-direction: column; gap: var(--gt-space-2); }
+  .gt-footer-h { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gt-text-soft); margin-bottom: var(--gt-space-2); font-weight: 600; }
+  .gt-footer-col a { color: var(--gt-text-muted); font-size: 0.9rem; }
+  .gt-footer-col a:hover { color: var(--gt-text); }
+  .gt-footer-bottom { display: flex; justify-content: space-between; margin-top: var(--gt-space-7); padding-top: var(--gt-space-5); border-top: 1px solid var(--gt-border); font-size: 0.82rem; }
+  @media (max-width: 768px) {
+    .gt-footer-grid { grid-template-columns: 1fr 1fr; }
+    .gt-footer-bottom { flex-direction: column; gap: var(--gt-space-2); }
+  }
+</style>

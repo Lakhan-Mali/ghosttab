@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Settings — GhostTab AI{% endblock %}
+
+{% block body %}
+<div class="gt-app-layout">
+  {% include "partials/sidebar.html" with active_nav='settings' %}
+  <div class="gt-app-main">
+    <header class="gt-mobile-topbar">
+      <button class="gt-icon-btn" id="mobileSidebarToggle"><i data-lucide="menu"></i></button>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+      <span></span>
+    </header>
+    <main class="gt-app-content">
+      <header class="gt-page-header">
+        <span class="gt-eyebrow">Account</span>
+        <h1 class="gt-h1">Settings</h1>
+      </header>
+
+      <div class="gt-card gt-form-card" style="max-width:680px;">
+        <form method="post" class="gt-stack">
+          {% csrf_token %}
+          <div class="gt-field">
+            <label class="gt-label" for="id_display_name">Display name</label>
+            <input type="text" id="id_display_name" name="display_name" class="gt-input" value="{{ form.display_name.value|default:'' }}">
+          </div>
+
+          <fieldset class="gt-fieldset">
+            <legend class="gt-h4">Preferences</legend>
+            <label class="gt-check">
+              <input type="checkbox" name="reduced_motion" {% if form.reduced_motion.value %}checked{% endif %}>
+              <span>Reduce motion (disables entrance animations)</span>
+            </label>
+            <label class="gt-check">
+              <input type="checkbox" name="auto_group_new_pages" {% if form.auto_group_new_pages.value %}checked{% endif %}>
+              <span>Auto-infer project goal on import</span>
+            </label>
+            <label class="gt-check">
+              <input type="checkbox" name="auto_generate_actions" {% if form.auto_generate_actions.value %}checked{% endif %}>
+              <span>Auto-generate next actions on import</span>
+            </label>
+            <label class="gt-check">
+              <input type="checkbox" name="send_product_updates" {% if form.send_product_updates.value %}checked{% endif %}>
+              <span>Email me product updates <span class="gt-soft">(off by default)</span></span>
+            </label>
+          </fieldset>
+
+          <div class="gt-field">
+            <label class="gt-label" for="id_theme">Theme</label>
+            <select id="id_theme" name="theme" class="gt-select">
+              {% for code, label in form.theme.field.choices %}
+                <option value="{{ code }}" {% if form.theme.value == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="gt-form-actions">
+            <button type="submit" class="gt-btn gt-btn-primary"><i data-lucide="check"></i> Save settings</button>
+            <a href="/app/" class="gt-btn gt-btn-ghost">Back to workspace</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="gt-card gt-form-card" style="max-width:680px; margin-top: var(--gt-space-5);">
+        <h2 class="gt-h4">Privacy & data</h2>
+        <p class="gt-muted" style="font-size:0.88rem;">You can delete any project from its detail page. To delete your account and all associated data, contact <a href="mailto:{{ SUPPORT_EMAIL }}" class="gt-link">{{ SUPPORT_EMAIL }}</a>.</p>
+      </div>
+    </main>
+  </div>
+</div>
+<style>
+  .gt-page-header { margin-bottom: var(--gt-space-6); }
+  .gt-page-header .gt-h1 { margin: 6px 0; }
+  .gt-fieldset { border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); padding: var(--gt-space-4); margin: 0; }
+  .gt-fieldset legend { padding: 0 8px; }
+  .gt-check { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; cursor: pointer; font-size: 0.9rem; }
+  .gt-check input { margin-top: 3px; accent-color: var(--gt-accent); }
+  .gt-form-actions { display: flex; gap: var(--gt-space-3); }
+</style>
+<script>
+  // Sidebar logic is centralized in templates/partials/sidebar.html
+</script>
+{% endblock %}

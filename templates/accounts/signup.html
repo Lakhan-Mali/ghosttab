@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign Up — GhostTab AI{% endblock %}
+
+{% block body %}
+{% include "partials/nav.html" %}
+
+<section class="gt-auth-page">
+  <div class="gt-container">
+    <div class="gt-auth-card gt-anim-fade-up">
+      <div class="gt-auth-head">
+        <span class="gt-eyebrow">Build your workspace</span>
+        <h1 class="gt-h2 gt-auth-title">Create your GhostTab AI account</h1>
+        <p class="gt-muted">Free in development. No credit card required.</p>
+      </div>
+
+      <form method="post" class="gt-auth-form">
+        {% csrf_token %}
+        <div class="gt-field">
+          <label class="gt-label" for="id_email">Email</label>
+          <input type="email" id="id_email" name="email" class="gt-input" autocomplete="email" required value="{{ form.email.value|default:'' }}">
+          {% if form.email.errors %}<div class="gt-field-error">{{ form.email.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="gt-field">
+          <label class="gt-label" for="id_display_name">Display name <span class="gt-soft">(optional)</span></label>
+          <input type="text" id="id_display_name" name="display_name" class="gt-input" autocomplete="name" value="{{ form.display_name.value|default:'' }}">
+        </div>
+        <div class="gt-field">
+          <label class="gt-label" for="id_password1">Password</label>
+          <input type="password" id="id_password1" name="password1" class="gt-input" autocomplete="new-password" required>
+          {% if form.password1.errors %}<div class="gt-field-error">{{ form.password1.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="gt-field">
+          <label class="gt-label" for="id_password2">Confirm password</label>
+          <input type="password" id="id_password2" name="password2" class="gt-input" autocomplete="new-password" required>
+          {% if form.password2.errors %}<div class="gt-field-error">{{ form.password2.errors|join:", " }}</div>{% endif %}
+        </div>
+        {% if form.non_field_errors %}<div class="gt-field-error">{{ form.non_field_errors|join:", " }}</div>{% endif %}
+        <button type="submit" class="gt-btn gt-btn-primary gt-btn-block gt-btn-lg">
+          <i data-lucide="sparkles"></i> Build My Workspace
+        </button>
+      </form>
+
+      <div class="gt-auth-divider"><span>or</span></div>
+
+      <p class="gt-auth-alt gt-muted">
+        Already have an account? <a href="/auth/login/" class="gt-link">Sign in</a>
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .gt-auth-page { padding: var(--gt-space-9) 0; min-height: calc(100vh - var(--gt-nav-h)); display: flex; align-items: center; }
+  .gt-auth-card { max-width: 440px; margin: 0 auto; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-lg); padding: var(--gt-space-7); }
+  .gt-auth-head { text-align: center; margin-bottom: var(--gt-space-6); }
+  .gt-auth-title { margin: var(--gt-space-3) 0 var(--gt-space-2); }
+  .gt-auth-form { display: flex; flex-direction: column; gap: var(--gt-space-4); }
+  .gt-field { display: flex; flex-direction: column; }
+  .gt-auth-divider { display: flex; align-items: center; gap: 12px; margin: var(--gt-space-5) 0; color: var(--gt-text-dim); font-size: 0.78rem; }
+  .gt-auth-divider::before, .gt-auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--gt-border); }
+  .gt-auth-alt { text-align: center; font-size: 0.88rem; margin-top: var(--gt-space-3); }
+  .gt-link { color: var(--gt-accent-soft); text-decoration: underline; text-underline-offset: 2px; }
+  .gt-link:hover { color: var(--gt-accent); }
+</style>
+{% endblock %}

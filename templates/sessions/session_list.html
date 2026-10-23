@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Saved Sessions — GhostTab AI{% endblock %}
+
+{% block body %}
+<div class="gt-app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="gt-app-main">
+    <header class="gt-mobile-topbar">
+      <button class="gt-icon-btn" id="mobileSidebarToggle"><i data-lucide="menu"></i></button>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+      <span></span>
+    </header>
+    <main class="gt-app-content">
+      <header class="gt-page-header">
+        <span class="gt-eyebrow">Recovery</span>
+        <h1 class="gt-h1">Saved Sessions</h1>
+        <p class="gt-muted">Each session is a snapshot of tabs you imported at one moment. Click into the project it became.</p>
+      </header>
+
+      {% if sessions %}
+      <div class="gt-session-list">
+        {% for s in sessions %}
+        <div class="gt-card gt-session-card">
+          <div class="gt-session-info">
+            <div class="gt-session-head">
+              <span class="gt-badge"><i data-lucide="history"></i> {{ s.source }}</span>
+              <span class="gt-badge gt-badge-accent">{{ s.page_count }} page{{ s.page_count|pluralize }}</span>
+              <span class="gt-soft gt-mono" style="font-size:0.78rem;">{{ s.created_at|date:"M j, Y · H:i" }}</span>
+            </div>
+            <h3 class="gt-h4 gt-session-title">{{ s.label|default:"Untitled session" }}</h3>
+          </div>
+          {% if s.converted_project %}
+          <a href="/app/{{ s.converted_project.id }}/" class="gt-btn gt-btn-ghost gt-btn-sm">
+            Open project <i data-lucide="arrow-right"></i>
+          </a>
+          {% else %}
+          <span class="gt-badge">Not converted</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="gt-card gt-empty">
+        <div class="gt-empty-icon"><i data-lucide="inbox"></i></div>
+        <h3 class="gt-h3">No saved sessions yet</h3>
+        <p class="gt-muted">Sessions appear here when you import tabs via the browser extension or bulk-paste URLs.</p>
+        <a href="/app/new/" class="gt-btn gt-btn-primary"><i data-lucide="plus"></i> Start a new project</a>
+      </div>
+      {% endif %}
+    </main>
+  </div>
+</div>
+<style>
+  .gt-page-header { margin-bottom: var(--gt-space-6); }
+  .gt-page-header .gt-h1 { margin: 6px 0; }
+  .gt-session-list { display: flex; flex-direction: column; gap: var(--gt-space-3); }
+  .gt-session-card { display: flex; align-items: center; justify-content: space-between; gap: var(--gt-space-4); padding: var(--gt-space-4) var(--gt-space-5); }
+  .gt-session-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .gt-session-head .lucide { width: 12px; height: 12px; }
+  .gt-session-title { margin: 0; }
+</style>
+<script>
+  // Sidebar logic is centralized in templates/partials/sidebar.html
+</script>
+{% endblock %}

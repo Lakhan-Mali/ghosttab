@@ -1,0 +1,29 @@
+# Render Blueprint — one-click deploy of GhostTab AI to Render free tier.
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: ghosttab-ai
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate"
+    startCommand: "gunicorn config.wsgi:application --log-file -"
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "False"
+      - key: DJANGO_ALLOWED_HOSTS
+        fromService:
+          type: web
+          name: ghosttab-ai
+          property: hostname
+      - key: CSRF_TRUSTED_ORIGINS
+        fromService:
+          type: web
+          name: ghosttab-ai
+          property: host
+      - key: AI_PROVIDER
+        value: demo
+      - key: PYTHON_VERSION
+        value: "3.12.15"
+    autoDeploy: true

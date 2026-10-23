@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Action Queue — GhostTab AI{% endblock %}
+
+{% block body %}
+<div class="gt-app-layout">
+  {% include "partials/sidebar.html" with active_nav='queue' %}
+  <div class="gt-app-main">
+    <header class="gt-mobile-topbar">
+      <button class="gt-icon-btn" id="mobileSidebarToggle"><i data-lucide="menu"></i></button>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+      <span></span>
+    </header>
+    <main class="gt-app-content">
+      <header class="gt-page-header">
+        <span class="gt-eyebrow">Cross-project</span>
+        <h1 class="gt-h1">Action Queue</h1>
+        <p class="gt-muted">Every pending action across every project, in one place. Complete them here or jump into the project.</p>
+      </header>
+
+      <section class="gt-queue-section">
+        <header class="gt-section-row">
+          <h2 class="gt-h3">Pending <span class="gt-side-badge gt-side-badge-soft">{{ pending_count }}</span></h2>
+        </header>
+        {% if pending %}
+        <div class="gt-card gt-queue-list">
+          {% for a in pending %}
+          <div class="gt-queue-item">
+            <form method="post" action="/app/{{ a.project.id }}/actions/{{ a.id }}/toggle/?json=1" class="gt-action-toggle">
+              {% csrf_token %}
+              <button type="submit" class="gt-action-check" aria-label="Mark complete"><i data-lucide="circle"></i></button>
+            </form>
+            <div class="gt-queue-body">
+              <div class="gt-queue-title">{{ a.title }}</div>
+              <a href="/app/{{ a.project.id }}/" class="gt-queue-project gt-soft gt-mono">{{ a.project.title }} →</a>
+            </div>
+            <span class="gt-soft gt-mono" style="font-size:0.74rem;">{{ a.created_at|timesince }} ago</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="gt-card gt-empty">
+          <div class="gt-empty-icon"><i data-lucide="check-circle-2"></i></div>
+          <h3 class="gt-h3">All caught up.</h3>
+          <p class="gt-muted">No pending actions across any of your projects.</p>
+        </div>
+        {% endif %}
+      </section>
+
+      {% if completed %}
+      <section class="gt-queue-section">
+        <header class="gt-section-row">
+          <h2 class="gt-h3">Recently completed</h2>
+        </header>
+        <div class="gt-card gt-queue-list">
+          {% for a in completed %}
+          <div class="gt-queue-item is-done">
+            <span class="gt-action-check"><i data-lucide="check-circle-2" style="color:var(--gt-success)"></i></span>
+            <div class="gt-queue-body">
+              <div class="gt-queue-title">{{ a.title }}</div>
+              <a href="/app/{{ a.project.id }}/" class="gt-queue-project gt-soft gt-mono">{{ a.project.title }} →</a>
+            </div>
+            <span class="gt-soft gt-mono" style="font-size:0.74rem;">{% if a.completed_at %}{{ a.completed_at|timesince }} ago{% endif %}</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </main>
+  </div>
+</div>
+<style>
+  .gt-page-header { margin-bottom: var(--gt-space-6); }
+  .gt-page-header .gt-h1 { margin: 6px 0; }
+  .gt-queue-section { margin-bottom: var(--gt-space-7); }
+  .gt-queue-list { padding: var(--gt-space-3); }
+  .gt-queue-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--gt-r-sm); transition: background var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-queue-item:hover { background: var(--gt-surface); }
+  .gt-queue-item.is-done .gt-queue-title { text-decoration: line-through; color: var(--gt-text-muted); }
+  .gt-action-toggle { background: none; padding: 0; margin: 0; }
+  .gt-action-check { background: none; padding: 0; cursor: pointer; color: var(--gt-text-soft); }
+  .gt-action-check .lucide { width: 18px; height: 18px; }
+  .gt-action-check:hover { color: var(--gt-success); }
+  .gt-queue-body { flex: 1; min-width: 0; }
+  .gt-queue-title { font-size: 0.92rem; color: var(--gt-text); }
+  .gt-queue-project { font-size: 0.76rem; margin-top: 2px; display: inline-block; }
+  .gt-queue-project:hover { color: var(--gt-accent-soft); }
+</style>
+<script>
+  // Sidebar logic is centralized in templates/partials/sidebar.html
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.gt-action-toggle').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const CSRF = document.querySelector('[name=csrfmiddlewaretoken]', form).value;
+        await fetch(form.action, { method: 'POST', headers: { 'X-CSRFToken': CSRF }, body: new FormData(form) });
+        location.reload();
+      });
+    });
+  });
+</script>
+{% endblock %}

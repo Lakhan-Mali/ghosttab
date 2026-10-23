@@ -1,0 +1,10 @@
+# Production dependencies (includes dev deps for completeness)
+Django>=6.1,<7
+djangorestframework>=3.18
+requests>=2.31
+python-dotenv>=1.0
+Pillow>=10.0
+gunicorn>=23.0
+whitenoise>=6.6
+psycopg2-binary>=2.9
+dj-database-url>=2.1

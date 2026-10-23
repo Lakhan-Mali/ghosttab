@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Demo Workspace — GhostTab AI{% endblock %}
+
+{% block body %}
+{% include "partials/nav.html" %}
+
+<section class="gt-page">
+  <div class="gt-container">
+    <div class="gt-demo-banner">
+      <div>
+        <span class="gt-eyebrow">Interactive demo</span>
+        <h1 class="gt-h1 gt-demo-title">A real workspace, no account required.</h1>
+        <p class="gt-muted">This is the same product experience you'll get after signing up — populated with realistic sample data so you can explore freely.</p>
+      </div>
+      <a href="/auth/signup/" class="gt-btn gt-btn-primary gt-btn-lg gt-hide-mobile">Build your own workspace <i data-lucide="arrow-right"></i></a>
+    </div>
+
+    <div class="gt-demo-layout">
+      <!-- Sidebar -->
+      <aside class="gt-demo-sidebar">
+        <div class="gt-demo-sidebar-head">
+          <span class="gt-eyebrow gt-soft">Sample projects</span>
+        </div>
+        <nav class="gt-demo-nav" id="demoNav">
+          {% for p in workspace.projects %}
+          <a href="#project-{{ p.id }}" class="gt-demo-nav-item{% if forloop.first %} is-active{% endif %}" data-pid="{{ p.id }}">
+            <span class="gt-dot" style="color: {% cycle '#5eead4' '#fbbf24' '#4ade80' %};"></span>
+            <span class="gt-demo-nav-title">{{ p.title }}</span>
+            <span class="gt-demo-nav-count">{{ p.pages|length }}</span>
+          </a>
+          {% endfor %}
+        </nav>
+      </aside>
+
+      <!-- Main -->
+      <main class="gt-demo-main">
+        {% for p in workspace.projects %}
+        <article class="gt-demo-project{% if not forloop.first %} gt-hidden{% endif %}" id="project-{{ p.id }}" data-pid="{{ p.id }}">
+          <header class="gt-demo-project-head">
+            <div>
+              <span class="gt-badge gt-badge-accent"><i data-lucide="folder"></i> Demo project</span>
+              <h2 class="gt-h1 gt-demo-project-title">{{ p.title }}</h2>
+              <p class="gt-muted gt-demo-project-goal"><i data-lucide="target" style="width:16px;height:16px;display:inline;vertical-align:-2px;"></i> {{ p.goal }}</p>
+            </div>
+            <div class="gt-demo-project-stats">
+              <div class="gt-stat"><div class="gt-stat-num">{{ p.pages|length }}</div><div class="gt-stat-lbl">Pages</div></div>
+              <div class="gt-stat"><div class="gt-stat-num">{{ p.actions|length }}</div><div class="gt-stat-lbl">Actions</div></div>
+              <div class="gt-stat"><div class="gt-stat-num">{% widthratio p.actions|length 100 3 %}%</div><div class="gt-stat-lbl">Done</div></div>
+            </div>
+          </header>
+
+          <!-- Summary -->
+          <section class="gt-card gt-demo-section">
+            <div class="gt-demo-section-head">
+              <h3 class="gt-h3"><i data-lucide="file-text"></i> Research summary</h3>
+              <span class="gt-badge">Demo mode</span>
+            </div>
+            <p class="gt-demo-summary">{{ p.summary }}</p>
+          </section>
+
+          <!-- Two columns: pages + actions -->
+          <div class="gt-demo-grid-2">
+            <section class="gt-card gt-demo-section">
+              <div class="gt-demo-section-head">
+                <h3 class="gt-h3"><i data-lucide="layers"></i> Saved pages</h3>
+                <span class="gt-badge">{{ p.pages|length }}</span>
+              </div>
+              <ul class="gt-demo-pages">
+                {% for page in p.pages %}
+                <li class="gt-demo-page">
+                  <div class="gt-demo-page-fav" style="background:{% cycle '#5eead4' '#a78bfa' '#fbbf24' '#4ade80' %}"></div>
+                  <div class="gt-demo-page-body">
+                    <a href="{{ page.url }}" target="_blank" rel="noopener noreferrer" class="gt-demo-page-title">{{ page.title }} <i data-lucide="external-link" style="width:11px;height:11px;display:inline;opacity:0.6;"></i></a>
+                    <div class="gt-demo-page-domain gt-soft gt-mono">{{ page.domain }}</div>
+                    {% if page.note %}<div class="gt-demo-page-note gt-muted">{{ page.note }}</div>{% endif %}
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+            </section>
+
+            <section class="gt-card gt-demo-section">
+              <div class="gt-demo-section-head">
+                <h3 class="gt-h3"><i data-lucide="list-checks"></i> Next actions</h3>
+                <span class="gt-badge">{% if p.comparison %}AI-generated{% else %}Demo{% endif %}</span>
+              </div>
+              <ul class="gt-demo-actions">
+                {% for a in p.actions %}
+                <li class="gt-demo-action{% if a.status == 'done' %} is-done{% elif a.status == 'skipped' %} is-skipped{% endif %}">
+                  <span class="gt-demo-action-check">
+                    {% if a.status == 'done' %}<i data-lucide="check-circle-2"></i>{% elif a.status == 'skipped' %}<i data-lucide="minus-circle"></i>{% else %}<i data-lucide="circle"></i>{% endif %}
+                  </span>
+                  <div>
+                    <div class="gt-demo-action-title">{{ a.title }}</div>
+                    {% if a.rationale %}<div class="gt-demo-action-rat gt-muted">{{ a.rationale }}</div>{% endif %}
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+            </section>
+          </div>
+
+          {% if p.comparison %}
+          <!-- Comparison -->
+          <section class="gt-card gt-demo-section">
+            <div class="gt-demo-section-head">
+              <h3 class="gt-h3"><i data-lucide="table-2"></i> Comparison</h3>
+              <span class="gt-badge gt-badge-accent">AI-built</span>
+            </div>
+            <div class="gt-table-wrap">
+              <table class="gt-table">
+                <thead>
+                  <tr>
+                    <th>Option</th>
+                    {% for col in p.comparison.columns %}<th>{{ col }}</th>{% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for row in p.comparison.rows %}
+                  <tr>
+                    <td class="gt-table-name">{{ row.name }}</td>
+                    {% for v in row.values %}<td>{{ v }}</td>{% endfor %}
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </section>
+          {% endif %}
+        </article>
+        {% endfor %}
+      </main>
+    </div>
+  </div>
+</section>
+
+{% include "partials/footer.html" %}
+
+<style>
+  .gt-page { padding: var(--gt-space-7) 0 var(--gt-space-8); }
+  .gt-demo-banner { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--gt-space-5); margin-bottom: var(--gt-space-7); }
+  .gt-demo-title { margin: var(--gt-space-3) 0 var(--gt-space-3); }
+  .gt-demo-layout { display: grid; grid-template-columns: 280px 1fr; gap: var(--gt-space-6); align-items: start; }
+  .gt-demo-sidebar { position: sticky; top: calc(var(--gt-nav-h) + 24px); }
+  .gt-demo-nav { display: flex; flex-direction: column; gap: 4px; margin-top: var(--gt-space-3); }
+  .gt-demo-nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: var(--gt-r-md); color: var(--gt-text-muted); border: 1px solid transparent; transition: all var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-demo-nav-item:hover { background: var(--gt-surface); color: var(--gt-text); }
+  .gt-demo-nav-item.is-active { background: var(--gt-surface-strong); color: var(--gt-text); border-color: var(--gt-border); }
+  .gt-demo-nav-title { flex: 1; font-size: 0.88rem; font-weight: 500; }
+  .gt-demo-nav-count { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: var(--gt-surface); color: var(--gt-text-soft); }
+  .gt-demo-project { animation: gt-fade-up 0.4s var(--gt-ease-out) both; }
+  .gt-demo-project.gt-hidden { display: none; }
+  .gt-demo-project-head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--gt-space-5); margin-bottom: var(--gt-space-6); }
+  .gt-demo-project-title { margin: var(--gt-space-3) 0 var(--gt-space-2); }
+  .gt-demo-project-goal { font-size: 0.95rem; max-width: 720px; }
+  .gt-demo-project-stats { display: flex; gap: var(--gt-space-4); }
+  .gt-stat { text-align: center; padding: 8px 14px; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); }
+  .gt-stat-num { font-size: 1.4rem; font-weight: 700; color: var(--gt-text); font-family: var(--gt-font-mono); }
+  .gt-stat-lbl { font-size: 0.72rem; color: var(--gt-text-soft); text-transform: uppercase; letter-spacing: 0.1em; }
+  .gt-demo-section { padding: var(--gt-space-5); margin-bottom: var(--gt-space-5); }
+  .gt-demo-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--gt-space-4); }
+  .gt-demo-section-head .lucide { width: 16px; height: 16px; color: var(--gt-accent-soft); margin-right: 6px; vertical-align: -2px; }
+  .gt-demo-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gt-space-5); }
+  .gt-demo-pages, .gt-demo-actions { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .gt-demo-page { display: flex; gap: 12px; padding: 10px; background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); }
+  .gt-demo-page-fav { width: 24px; height: 24px; border-radius: var(--gt-r-xs); flex-shrink: 0; margin-top: 2px; }
+  .gt-demo-page-title { font-weight: 500; color: var(--gt-text); font-size: 0.92rem; }
+  .gt-demo-page-domain { font-size: 0.74rem; margin-top: 2px; }
+  .gt-demo-page-note { font-size: 0.82rem; margin-top: 4px; line-height: 1.45; }
+  .gt-demo-action { display: flex; gap: 10px; padding: 10px; background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); }
+  .gt-demo-action-check .lucide { width: 18px; height: 18px; color: var(--gt-text-soft); flex-shrink: 0; margin-top: 2px; }
+  .gt-demo-action.is-done .gt-demo-action-check .lucide { color: var(--gt-success); }
+  .gt-demo-action.is-done .gt-demo-action-title { text-decoration: line-through; color: var(--gt-text-muted); }
+  .gt-demo-action.is-skipped .gt-demo-action-check .lucide { color: var(--gt-text-dim); }
+  .gt-demo-action.is-skipped .gt-demo-action-title { color: var(--gt-text-dim); text-decoration: line-through; }
+  .gt-demo-action-title { font-size: 0.9rem; font-weight: 500; color: var(--gt-text); }
+  .gt-demo-action-rat { font-size: 0.78rem; margin-top: 2px; line-height: 1.45; }
+  .gt-table-wrap { overflow-x: auto; }
+  .gt-table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  .gt-table th, .gt-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--gt-border); }
+  .gt-table th { color: var(--gt-text-soft); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .gt-table td { color: var(--gt-text-muted); }
+  .gt-table-name { color: var(--gt-text) !important; font-weight: 500; }
+  .gt-table tbody tr:hover { background: var(--gt-surface); }
+  @media (max-width: 1024px) {
+    .gt-demo-layout { grid-template-columns: 1fr; }
+    .gt-demo-sidebar { position: static; }
+    .gt-demo-nav { flex-direction: row; flex-wrap: wrap; }
+    .gt-demo-nav-item { flex: 1 1 auto; }
+  }
+  @media (max-width: 768px) {
+    .gt-demo-grid-2 { grid-template-columns: 1fr; }
+    .gt-demo-project-head { flex-direction: column; }
+    .gt-demo-banner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+
+<script>
+  // Demo nav switcher
+  (function() {
+    const navItems = document.querySelectorAll('.gt-demo-nav-item');
+    const projects = document.querySelectorAll('.gt-demo-project');
+    navItems.forEach(item => {
+      item.addEventListener('click', (e) => {
+        e.preventDefault();
+        const pid = item.dataset.pid;
+        navItems.forEach(n => n.classList.remove('is-active'));
+        item.classList.add('is-active');
+        projects.forEach(p => p.classList.toggle('gt-hidden', p.dataset.pid !== pid));
+        if (window.lucide) window.lucide.createIcons();
+      });
+    });
+  })();
+</script>
+{% endblock %}

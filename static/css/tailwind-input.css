@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Pull in the full design system (CSS variables + component classes) */
+@import "./design-system.css";

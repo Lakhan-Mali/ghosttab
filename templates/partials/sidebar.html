@@ -1,0 +1,275 @@
+<aside class="gt-app-sidebar" id="appSidebar" aria-label="Workspace navigation">
+  <div class="gt-sidebar-head">
+    <a href="/" class="gt-brand">
+      <span class="gt-brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M4 4 H18 V8 H14 V18 H8 V8 H4 Z" fill="url(#gt-side-grad)"/>
+          <defs>
+            <linearGradient id="gt-side-grad" x1="0" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#8a5cf6"/>
+              <stop offset="1" stop-color="#5eead4"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </span>
+      <span class="gt-brand-text gt-hide-collapsed">GhostTab <span class="gt-brand-ai">AI</span></span>
+    </a>
+    <div class="gt-sidebar-head-actions">
+      <button class="gt-icon-btn gt-sidebar-close" id="sidebarCloseMobile" aria-label="Close sidebar">
+        <i data-lucide="x"></i>
+      </button>
+      <button class="gt-icon-btn gt-sidebar-toggle" id="sidebarToggle" aria-label="Collapse sidebar">
+        <i data-lucide="panel-left-close"></i>
+      </button>
+    </div>
+  </div>
+
+  <div class="gt-sidebar-quick gt-hide-collapsed">
+    <a href="/app/new/" class="gt-btn gt-btn-primary gt-btn-block gt-btn-sm"><i data-lucide="plus"></i> New project</a>
+  </div>
+
+  <nav class="gt-sidebar-nav">
+    <a href="/app/" class="gt-side-link{% if active_nav == 'overview' %} is-active{% endif %}">
+      <i data-lucide="layout-dashboard"></i>
+      <span class="gt-hide-collapsed">Overview</span>
+    </a>
+    <a href="/app/?filter=mine" class="gt-side-link{% if active_nav == 'projects' %} is-active{% endif %}">
+      <i data-lucide="folder-kanban"></i>
+      <span class="gt-hide-collapsed">My Projects</span>
+    </a>
+    <a href="/app/sessions/" class="gt-side-link{% if active_nav == 'sessions' %} is-active{% endif %}">
+      <i data-lucide="history"></i>
+      <span class="gt-hide-collapsed">Saved Sessions</span>
+    </a>
+    <a href="/app/actions/" class="gt-side-link gt-side-link-badge{% if active_nav == 'queue' %} is-active{% endif %}">
+      <i data-lucide="list-todo"></i>
+      <span class="gt-hide-collapsed">Action Queue</span>
+      {% if pending_action_count > 0 %}<span class="gt-side-badge">{{ pending_action_count }}</span>{% endif %}
+    </a>
+  </nav>
+
+  <div class="gt-sidebar-section gt-hide-collapsed">
+    <div class="gt-side-section-label">Quick add</div>
+    <form method="post" action="/app/quick-add-url/" class="gt-quick-add-form">
+      {% csrf_token %}
+      <input type="url" name="url" placeholder="Paste a URL…" class="gt-input gt-input-sm" required aria-label="Quick add URL">
+      <button type="submit" class="gt-icon-btn" aria-label="Add URL"><i data-lucide="arrow-right"></i></button>
+    </form>
+  </div>
+
+  {% if AI_DEMO_MODE %}
+  <div class="gt-sidebar-banner gt-hide-collapsed">
+    <i data-lucide="info"></i>
+    <div>
+      <div class="gt-sidebar-banner-title">Demo AI mode</div>
+      <div class="gt-sidebar-banner-sub">Set AI_PROVIDER & API key for live AI.</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="gt-sidebar-foot">
+    <a href="/auth/settings/" class="gt-side-user" aria-label="Account settings">
+      <span class="gt-avatar">{{ user.friendly_name|slice:":1"|upper }}</span>
+      <span class="gt-side-user-info gt-hide-collapsed">
+        <span class="gt-side-user-name">{{ user.friendly_name }}</span>
+        <span class="gt-side-user-email gt-soft gt-mono">{{ user.email }}</span>
+      </span>
+      <i data-lucide="settings" class="gt-hide-collapsed"></i>
+    </a>
+    <a href="/auth/logout/" class="gt-icon-btn gt-hide-collapsed" aria-label="Sign out" style="margin-left:4px;">
+      <i data-lucide="log-out"></i>
+    </a>
+  </div>
+</aside>
+
+<style>
+  .gt-app-sidebar {
+    width: var(--gt-sidebar-w);
+    background: var(--gt-bg-elev-1);
+    border-right: 1px solid var(--gt-border);
+    display: flex; flex-direction: column;
+    padding: var(--gt-space-4) var(--gt-space-3);
+    position: sticky; top: 0; height: 100vh;
+    transition: width var(--gt-dur) var(--gt-ease-out);
+    flex-shrink: 0;
+  }
+  .gt-app-sidebar.is-collapsed { width: var(--gt-sidebar-w-collapsed); }
+  .gt-app-sidebar.is-collapsed .gt-hide-collapsed { display: none !important; }
+  .gt-app-sidebar.is-collapsed .gt-side-link { justify-content: center; }
+  .gt-app-sidebar.is-collapsed .gt-side-user { justify-content: center; }
+  .gt-app-sidebar.is-collapsed .gt-sidebar-quick { padding: 0; }
+  .gt-app-sidebar.is-collapsed .gt-sidebar-quick .gt-btn { padding: 10px; }
+
+  .gt-sidebar-head { display: flex; align-items: center; justify-content: space-between; padding: 0 var(--gt-space-2) var(--gt-space-4); gap: 8px; }
+  .gt-sidebar-toggle .lucide { width: 16px; height: 16px; }
+  .gt-app-sidebar.is-collapsed .gt-sidebar-toggle .lucide { transform: rotate(180deg); }
+  /* Mobile-only close button (hidden on desktop) */
+  .gt-sidebar-close { display: none; }
+
+  .gt-sidebar-quick { padding: 0 var(--gt-space-2) var(--gt-space-4); }
+
+  .gt-sidebar-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 var(--gt-space-2); }
+  .gt-side-link {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--gt-r-md);
+    color: var(--gt-text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all var(--gt-dur-fast) var(--gt-ease-out);
+  }
+  .gt-side-link:hover { background: var(--gt-surface); color: var(--gt-text); }
+  .gt-side-link.is-active { background: var(--gt-surface-strong); color: var(--gt-text); border-color: var(--gt-border); }
+  .gt-side-link .lucide { width: 18px; height: 18px; flex-shrink: 0; }
+  .gt-side-link.is-active .lucide { color: var(--gt-accent-soft); }
+  .gt-side-link-badge { justify-content: flex-start; }
+  .gt-side-badge { margin-left: auto; font-size: 0.7rem; padding: 1px 8px; border-radius: 999px; background: var(--gt-accent); color: #0b0d14; font-weight: 700; }
+
+  .gt-sidebar-section { padding: var(--gt-space-4) var(--gt-space-2); }
+  .gt-side-section-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gt-text-soft); margin-bottom: 8px; }
+  .gt-quick-add-form { display: flex; gap: 6px; }
+  .gt-input-sm { padding: 8px 10px; font-size: 0.84rem; }
+  .gt-quick-add-form .gt-icon-btn { width: 32px; height: 32px; }
+  .gt-quick-add-form .gt-icon-btn .lucide { width: 14px; height: 14px; }
+
+  .gt-sidebar-banner {
+    margin: var(--gt-space-3) var(--gt-space-2);
+    padding: 10px 12px;
+    background: rgba(94, 234, 212, 0.08);
+    border: 1px solid rgba(94, 234, 212, 0.20);
+    border-radius: var(--gt-r-md);
+    display: flex; gap: 10px; align-items: flex-start;
+    font-size: 0.78rem;
+  }
+  .gt-sidebar-banner .lucide { width: 16px; height: 16px; color: var(--gt-cyan); flex-shrink: 0; margin-top: 1px; }
+  .gt-sidebar-banner-title { font-weight: 600; color: var(--gt-cyan-soft); }
+  .gt-sidebar-banner-sub { color: var(--gt-text-muted); margin-top: 2px; }
+
+  .gt-sidebar-foot { margin-top: auto; padding: var(--gt-space-3) var(--gt-space-2); display: flex; align-items: center; gap: 4px; }
+  .gt-side-user { display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: var(--gt-r-md); flex: 1; transition: background var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-side-user:hover { background: var(--gt-surface); }
+  .gt-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--gt-grad-violet-cyan); color: #0b0d14; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 0.92rem; flex-shrink: 0; }
+  .gt-side-user-info { display: flex; flex-direction: column; overflow: hidden; flex: 1; }
+  .gt-side-user-name { font-size: 0.84rem; font-weight: 500; color: var(--gt-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gt-side-user-email { font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gt-side-user .lucide { width: 16px; height: 16px; color: var(--gt-text-soft); }
+
+  .gt-sidebar-head-actions { display: flex; align-items: center; gap: 4px; }
+
+  /* Mobile backdrop overlay (hidden by default, shown when sidebar is open on mobile) */
+  .gt-sidebar-backdrop {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(8, 10, 18, 0.65);
+    backdrop-filter: blur(4px);
+    z-index: 150;
+    opacity: 0;
+    transition: opacity var(--gt-dur) var(--gt-ease-out);
+    pointer-events: none;
+  }
+  .gt-sidebar-backdrop.is-visible { opacity: 1; pointer-events: auto; }
+
+  @media (max-width: 1024px) {
+    .gt-app-sidebar {
+      position: fixed; top: 0; left: 0; z-index: 200;
+      transform: translateX(-100%);
+      transition: transform var(--gt-dur) var(--gt-ease-out);
+      width: var(--gt-sidebar-w);
+      height: 100vh;
+      height: 100dvh;
+      box-shadow: var(--gt-shadow-lg);
+    }
+    .gt-app-sidebar.is-open { transform: translateX(0); }
+    .gt-app-sidebar.is-collapsed { width: var(--gt-sidebar-w); }
+    .gt-app-sidebar.is-collapsed .gt-hide-collapsed { display: block !important; }
+    .gt-app-sidebar.is-collapsed .gt-side-link { justify-content: flex-start; }
+    /* On mobile, the desktop collapse button is hidden; only the X close button shows */
+    .gt-sidebar-toggle { display: none; }
+    .gt-sidebar-close { display: inline-flex; }
+    /* When sidebar is open on mobile, show the backdrop */
+    .gt-sidebar-backdrop.is-visible { display: block; }
+  }
+</style>
+
+<!-- Mobile backdrop (rendered once per page; JS toggles .is-visible) -->
+<div class="gt-sidebar-backdrop" id="sidebarBackdrop" aria-hidden="true"></div>
+
+<script>
+  // Sidebar behavior — shared across all pages that include the sidebar.
+  (function() {
+    function setupSidebar() {
+      const sidebar = document.getElementById('appSidebar');
+      const toggle = document.getElementById('sidebarToggle');
+      const mobileToggle = document.getElementById('mobileSidebarToggle');
+      const closeMobile = document.getElementById('sidebarCloseMobile');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (!sidebar) return;
+
+      // Restore collapsed state on desktop only
+      const collapsed = localStorage.getItem('gt-sidebar-collapsed') === '1';
+      if (collapsed && window.innerWidth > 1024) sidebar.classList.add('is-collapsed');
+
+      function openMobile() {
+        sidebar.classList.add('is-open');
+        backdrop?.classList.add('is-visible');
+        document.body.style.overflow = 'hidden';
+      }
+      function closeMobileSidebar() {
+        sidebar.classList.remove('is-open');
+        backdrop?.classList.remove('is-visible');
+        document.body.style.overflow = '';
+      }
+
+      // Desktop collapse toggle
+      toggle?.addEventListener('click', () => {
+        sidebar.classList.toggle('is-collapsed');
+        localStorage.setItem('gt-sidebar-collapsed', sidebar.classList.contains('is-collapsed') ? '1' : '0');
+      });
+
+      // Mobile open
+      mobileToggle?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (sidebar.classList.contains('is-open')) {
+          closeMobileSidebar();
+        } else {
+          openMobile();
+        }
+      });
+
+      // Mobile close (X button)
+      closeMobile?.addEventListener('click', closeMobileSidebar);
+
+      // Backdrop click closes
+      backdrop?.addEventListener('click', closeMobileSidebar);
+
+      // ESC closes mobile sidebar
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sidebar.classList.contains('is-open')) closeMobileSidebar();
+      });
+
+      // Close on outside click (fallback for older browsers)
+      document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 1024
+            && sidebar.classList.contains('is-open')
+            && !sidebar.contains(e.target)
+            && !mobileToggle?.contains(e.target)
+            && !backdrop?.contains(e.target)) {
+          closeMobileSidebar();
+        }
+      });
+
+      // If user resizes to desktop, clean up mobile state
+      window.addEventListener('resize', () => {
+        if (window.innerWidth > 1024) {
+          closeMobileSidebar();
+        }
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', setupSidebar);
+    } else {
+      setupSidebar();
+    }
+  })();
+</script>

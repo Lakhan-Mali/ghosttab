@@ -1,0 +1,57 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}GhostTab AI — Pick up where your mind left off.{% endblock %}</title>
+  <meta name="description" content="{% block meta_desc %}Turn scattered browser tabs into organized projects, clear next steps, and work you can actually finish.{% endblock %}" />
+  <meta name="theme-color" content="#0b0d14" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Tailwind compiled CSS (build-pipeline output, not Play CDN) -->
+  <link rel="stylesheet" href="{% static 'css/dist.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+  <link rel="stylesheet" href="{% static 'css/extras.css' %}">
+  <link rel="stylesheet" href="{% static 'css/app-layout.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="gt-bg">
+
+  {% if messages %}
+    <div id="server-messages" class="gt-toast-area" aria-live="polite">
+      {% for msg in messages %}
+        <div class="gt-toast gt-toast-{% if msg.tags == 'error' %}error{% elif msg.tags == 'success' %}success{% else %}info{% endif %}">
+          <span class="gt-toast-icon">
+            {% if msg.tags == 'error' %}<i data-lucide="alert-circle"></i>{% elif msg.tags == 'success' %}<i data-lucide="check-circle-2"></i>{% else %}<i data-lucide="info"></i>{% endif %}
+          </span>
+          <div class="gt-toast-body">{{ msg }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {% block body %}{% endblock %}
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script src="{% static 'js/app.js' %}" defer></script>
+  {% block extra_js %}{% endblock %}
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) window.lucide.createIcons();
+      // Auto-dismiss toasts after 5s
+      document.querySelectorAll('.gt-toast').forEach(t => {
+        setTimeout(() => {
+          t.classList.add('is-leaving');
+          setTimeout(() => t.remove(), 300);
+        }, 5000);
+      });
+    });
+  </script>
+</body>
+</html>

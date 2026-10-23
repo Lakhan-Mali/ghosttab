@@ -1,0 +1,269 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Workspace — GhostTab AI{% endblock %}
+
+{% block body %}
+<div class="gt-app-layout">
+  {% include "partials/sidebar.html" %}
+
+  <div class="gt-app-main" id="appMain">
+    <!-- Mobile top bar -->
+    <header class="gt-mobile-topbar">
+      <button class="gt-icon-btn" id="mobileSidebarToggle" aria-label="Open sidebar"><i data-lucide="menu"></i></button>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+      <a href="/app/new/" class="gt-icon-btn" aria-label="New project"><i data-lucide="plus"></i></a>
+    </header>
+
+    <main class="gt-app-content">
+      {% if welcome %}
+      <div class="gt-welcome-banner gt-anim-fade-up">
+        <div>
+          <h2 class="gt-h3">Welcome to your workspace, {{ user.friendly_name }}.</h2>
+          <p class="gt-muted">Import a sample workspace to explore the product with realistic data — no setup required.</p>
+        </div>
+        <form method="post" action="/app/import-demo/">
+          {% csrf_token %}
+          <button type="submit" class="gt-btn gt-btn-primary"><i data-lucide="sparkles"></i> Import sample workspace</button>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Header -->
+      <header class="gt-app-header">
+        <div>
+          <span class="gt-eyebrow">Workspace</span>
+          <h1 class="gt-h1 gt-app-title">Overview</h1>
+        </div>
+        <div class="gt-app-header-actions">
+          <form method="get" class="gt-search-form" role="search">
+            <div class="gt-search-wrap">
+              <i data-lucide="search"></i>
+              <input type="search" name="q" value="{{ q }}" placeholder="Search projects…" class="gt-input gt-input-sm" aria-label="Search projects">
+            </div>
+          </form>
+          <select name="status" class="gt-select gt-select-sm" onchange="this.form.submit()" form="filterForm">
+            <option value="">All statuses</option>
+            {% for code, label in status_choices %}
+              <option value="{{ code }}" {% if status_filter == code %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+          <form id="filterForm" method="get" style="display:none;">
+            <input type="hidden" name="q" value="{{ q }}">
+          </form>
+          <a href="/app/new/" class="gt-btn gt-btn-primary gt-btn-sm gt-hide-mobile"><i data-lucide="plus"></i> New project</a>
+        </div>
+      </header>
+
+      <!-- Stats strip -->
+      <section class="gt-stats-strip gt-stagger">
+        <div class="gt-stat-card">
+          <div class="gt-stat-card-icon" style="color: var(--gt-accent-soft)"><i data-lucide="folder-kanban"></i></div>
+          <div>
+            <div class="gt-stat-card-num">{{ projects.paginator.count }}</div>
+            <div class="gt-stat-card-lbl">Projects</div>
+          </div>
+        </div>
+        <div class="gt-stat-card">
+          <div class="gt-stat-card-icon" style="color: var(--gt-cyan)"><i data-lucide="list-todo"></i></div>
+          <div>
+            <div class="gt-stat-card-num">{{ pending_action_count }}</div>
+            <div class="gt-stat-card-lbl">Pending actions</div>
+          </div>
+        </div>
+        <div class="gt-stat-card">
+          <div class="gt-stat-card-icon" style="color: var(--gt-success)"><i data-lucide="check-circle-2"></i></div>
+          <div>
+            <div class="gt-stat-card-num">{{ completed_count|default:"—" }}</div>
+            <div class="gt-stat-card-lbl">Done this week</div>
+          </div>
+        </div>
+        <div class="gt-stat-card">
+          <div class="gt-stat-card-icon" style="color: var(--gt-warn)"><i data-lucide="history"></i></div>
+          <div>
+            <div class="gt-stat-card-num">{{ sessions_count|default:"0" }}</div>
+            <div class="gt-stat-card-lbl">Saved sessions</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Projects grid -->
+      <section class="gt-app-section">
+        <header class="gt-section-row">
+          <h2 class="gt-h3">Your projects</h2>
+          {% if q or status_filter %}
+            <a href="/app/" class="gt-link gt-soft gt-mono" style="font-size:0.8rem;">Clear filters</a>
+          {% endif %}
+        </header>
+
+        {% if projects.object_list %}
+        <div class="gt-project-grid">
+          {% for p in projects.object_list %}
+          <article class="gt-card gt-project-card" data-reveal>
+            <div class="gt-project-card-head">
+              <span class="gt-badge gt-badge-{% if p.status == 'completed' %}success{% elif p.status == 'paused' %}warn{% elif p.status == 'archived' %}muted{% else %}accent{% endif %}">
+                <span class="gt-dot"></span> {{ p.get_status_display }}
+              </span>
+              {% if p.is_demo %}<span class="gt-badge">Demo</span>{% endif %}
+            </div>
+            <h3 class="gt-project-card-title">
+              <a href="/app/{{ p.id }}/">{{ p.title }}</a>
+            </h3>
+            {% if p.goal %}
+              <p class="gt-project-card-goal gt-muted">{{ p.goal|truncatechars:140 }}</p>
+            {% else %}
+              <p class="gt-project-card-goal gt-soft gt-italic">No goal yet — run "Infer goal" to generate one.</p>
+            {% endif %}
+            <div class="gt-project-card-meta">
+              <span><i data-lucide="layers"></i> {{ p.pages.count }} page{{ p.pages.count|pluralize }}</span>
+              <span><i data-lucide="list-todo"></i> {{ p.pending_action_count }} pending</span>
+              <span class="gt-soft"><i data-lucide="clock"></i> {{ p.updated_at|timesince }} ago</span>
+            </div>
+            <div class="gt-progress gt-project-card-progress">
+              <div class="gt-progress-bar" style="width: {% widthratio p.completion_ratio 100 1 %}%"></div>
+            </div>
+            {% if p.next_action %}
+            <div class="gt-project-card-next">
+              <span class="gt-eyebrow">Next action</span>
+              <div class="gt-project-card-next-text">{{ p.next_action.title|truncatechars:120 }}</div>
+            </div>
+            {% endif %}
+            <a href="/app/{{ p.id }}/" class="gt-project-card-link">Open project <i data-lucide="arrow-right"></i></a>
+          </article>
+          {% endfor %}
+        </div>
+
+        {% if projects.has_other_pages %}
+        <nav class="gt-pagination" aria-label="Pagination">
+          {% if projects.has_previous %}
+            <a href="?page={{ projects.previous_page_number }}&q={{ q }}&status={{ status_filter }}" class="gt-icon-btn"><i data-lucide="chevron-left"></i></a>
+          {% endif %}
+          <span class="gt-pagination-info gt-muted">Page {{ projects.number }} of {{ projects.paginator.num_pages }}</span>
+          {% if projects.has_next %}
+            <a href="?page={{ projects.next_page_number }}&q={{ q }}&status={{ status_filter }}" class="gt-icon-btn"><i data-lucide="chevron-right"></i></a>
+          {% endif %}
+        </nav>
+        {% endif %}
+
+        {% else %}
+        <div class="gt-card gt-empty">
+          <div class="gt-empty-icon"><i data-lucide="folder-search"></i></div>
+          <h3 class="gt-h3">No projects yet</h3>
+          <p class="gt-muted">{% if q or status_filter %}No projects match your filters.{% else %}Create your first project or import the sample workspace to explore.{% endif %}</p>
+          <div class="gt-empty-actions">
+            <a href="/app/new/" class="gt-btn gt-btn-primary"><i data-lucide="plus"></i> New project</a>
+            {% if not user.profile.demo_data_imported %}
+            <form method="post" action="/app/import-demo/" style="display:inline;">
+              {% csrf_token %}
+              <button type="submit" class="gt-btn gt-btn-ghost"><i data-lucide="sparkles"></i> Import sample workspace</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+        {% endif %}
+      </section>
+
+      <!-- Recent actions -->
+      {% if recent_actions %}
+      <section class="gt-app-section">
+        <header class="gt-section-row">
+          <h2 class="gt-h3">Recent activity</h2>
+          <a href="/app/actions/" class="gt-link gt-soft gt-mono" style="font-size:0.8rem;">View queue →</a>
+        </header>
+        <div class="gt-card gt-recent-list">
+          {% for a in recent_actions %}
+          <div class="gt-recent-item">
+            <span class="gt-recent-status">
+              {% if a.status == 'done' %}<i data-lucide="check-circle-2" style="color:var(--gt-success)"></i>{% elif a.status == 'in_progress' %}<i data-lucide="circle-dot" style="color:var(--gt-warn)"></i>{% elif a.status == 'skipped' %}<i data-lucide="minus-circle" style="color:var(--gt-text-dim)"></i>{% else %}<i data-lucide="circle" style="color:var(--gt-text-soft)"></i>{% endif %}
+            </span>
+            <div class="gt-recent-body">
+              <div class="gt-recent-title">{{ a.title }}</div>
+              <a href="/app/{{ a.project.id }}/" class="gt-recent-project gt-soft gt-mono">{{ a.project.title }}</a>
+            </div>
+            <span class="gt-recent-time gt-soft">{{ a.created_at|timesince }} ago</span>
+          </div>
+          {% endfor %}
+        </div>
+      </section>
+      {% endif %}
+    </main>
+  </div>
+</div>
+
+<style>
+  /* Layout (.gt-app-layout, .gt-app-main, .gt-mobile-topbar, .gt-app-content)
+     is now defined in static/css/app-layout.css and shared across all pages. */
+
+  .gt-welcome-banner { display: flex; align-items: center; justify-content: space-between; gap: var(--gt-space-5); padding: var(--gt-space-5) var(--gt-space-6); background: var(--gt-grad-violet-deep); border: 1px solid var(--gt-border-accent); border-radius: var(--gt-r-lg); margin-bottom: var(--gt-space-6); }
+  .gt-welcome-banner .gt-h3 { margin-bottom: 4px; }
+
+  .gt-app-header { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--gt-space-4); margin-bottom: var(--gt-space-6); flex-wrap: wrap; }
+  .gt-app-title { margin: 6px 0 0; }
+  .gt-app-header-actions { display: flex; align-items: center; gap: var(--gt-space-3); flex-wrap: wrap; }
+  .gt-search-form { display: inline-block; }
+  .gt-search-wrap { position: relative; display: flex; align-items: center; }
+  .gt-search-wrap .lucide { position: absolute; left: 10px; width: 14px; height: 14px; color: var(--gt-text-soft); pointer-events: none; }
+  .gt-search-wrap input { padding-left: 32px; min-width: 240px; }
+  .gt-select-sm { padding: 7px 10px; font-size: 0.84rem; min-width: 140px; }
+
+  .gt-stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gt-space-4); margin-bottom: var(--gt-space-7); }
+  .gt-stat-card { display: flex; align-items: center; gap: 14px; padding: var(--gt-space-4) var(--gt-space-5); background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); }
+  .gt-stat-card-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: var(--gt-bg-elev-2); border-radius: var(--gt-r-sm); }
+  .gt-stat-card-icon .lucide { width: 18px; height: 18px; }
+  .gt-stat-card-num { font-size: 1.4rem; font-weight: 700; color: var(--gt-text); font-family: var(--gt-font-mono); }
+  .gt-stat-card-lbl { font-size: 0.74rem; color: var(--gt-text-soft); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  .gt-app-section { margin-bottom: var(--gt-space-7); }
+  .gt-section-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--gt-space-4); }
+
+  .gt-project-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: var(--gt-space-5); }
+  .gt-project-card { padding: var(--gt-space-5); display: flex; flex-direction: column; gap: 12px; }
+  .gt-project-card:hover { border-color: var(--gt-border-strong); transform: translateY(-2px); box-shadow: var(--gt-shadow-md); }
+  .gt-project-card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .gt-project-card-title { font-size: 1.05rem; font-weight: 600; line-height: 1.3; }
+  .gt-project-card-title a { color: var(--gt-text); }
+  .gt-project-card-title a:hover { color: var(--gt-accent-soft); }
+  .gt-project-card-goal { font-size: 0.86rem; line-height: 1.5; flex: 1; min-height: 40px; }
+  .gt-project-card-meta { display: flex; gap: var(--gt-space-3); flex-wrap: wrap; font-size: 0.76rem; color: var(--gt-text-muted); }
+  .gt-project-card-meta .lucide { width: 12px; height: 12px; vertical-align: -1px; margin-right: 2px; }
+  .gt-project-card-progress { margin-top: 4px; }
+  .gt-project-card-next { padding: var(--gt-space-3); background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-sm); }
+  .gt-project-card-next .gt-eyebrow { font-size: 0.68rem; letter-spacing: 0.14em; }
+  .gt-project-card-next-text { font-size: 0.84rem; color: var(--gt-text); margin-top: 4px; line-height: 1.4; }
+  .gt-project-card-link { font-size: 0.84rem; color: var(--gt-accent-soft); display: inline-flex; align-items: center; gap: 4px; font-weight: 500; }
+  .gt-project-card-link .lucide { width: 14px; height: 14px; }
+  .gt-project-card-link:hover { color: var(--gt-accent); }
+
+  .gt-pagination { display: flex; align-items: center; justify-content: center; gap: var(--gt-space-4); margin-top: var(--gt-space-6); }
+  .gt-pagination-info { font-size: 0.82rem; }
+
+  .gt-empty { padding: var(--gt-space-9) var(--gt-space-5); }
+  .gt-empty-actions { display: flex; gap: var(--gt-space-3); justify-content: center; margin-top: var(--gt-space-5); flex-wrap: wrap; }
+
+  .gt-recent-list { padding: var(--gt-space-3); }
+  .gt-recent-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: var(--gt-r-sm); transition: background var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-recent-item:hover { background: var(--gt-surface); }
+  .gt-recent-status .lucide { width: 18px; height: 18px; }
+  .gt-recent-body { flex: 1; min-width: 0; }
+  .gt-recent-title { font-size: 0.9rem; color: var(--gt-text); }
+  .gt-recent-project { font-size: 0.74rem; margin-top: 2px; display: inline-block; }
+  .gt-recent-project:hover { color: var(--gt-accent-soft); }
+  .gt-recent-time { font-size: 0.76rem; }
+
+  @media (max-width: 1024px) {
+    .gt-stats-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 768px) {
+    .gt-app-header { flex-direction: column; align-items: flex-start; }
+    .gt-app-header-actions { width: 100%; }
+    .gt-search-wrap input { min-width: 0; flex: 1; }
+    .gt-welcome-banner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+
+<script>
+  // Sidebar logic is now centralized in templates/partials/sidebar.html
+  // (handles collapse, mobile drawer, backdrop, ESC, outside-click).
+  // Page-specific scripts can be added below.
+</script>
+{% endblock %}

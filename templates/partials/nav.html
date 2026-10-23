@@ -1,0 +1,93 @@
+<nav class="gt-nav" aria-label="Primary">
+  <div class="gt-container gt-nav-inner">
+    <a href="/" class="gt-brand" aria-label="GhostTab AI home">
+      <span class="gt-brand-mark" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+          <path d="M4 4 H18 V8 H14 V18 H8 V8 H4 Z" fill="url(#gt-nav-grad)"/>
+          <defs>
+            <linearGradient id="gt-nav-grad" x1="0" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#8a5cf6"/>
+              <stop offset="1" stop-color="#5eead4"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </span>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+    </a>
+
+    <div class="gt-nav-links gt-hide-mobile">
+      <a href="/#features" class="gt-nav-link">Features</a>
+      <a href="/#how" class="gt-nav-link">How It Works</a>
+      <a href="/demo/" class="gt-nav-link">Demo</a>
+      <a href="/privacy/" class="gt-nav-link">Privacy</a>
+    </div>
+
+    <div class="gt-nav-actions gt-hide-mobile">
+      {% if user.is_authenticated %}
+        <a href="/app/" class="gt-btn gt-btn-ghost gt-btn-sm">Open Workspace</a>
+      {% else %}
+        <a href="/auth/login/" class="gt-btn gt-btn-ghost gt-btn-sm">Sign In</a>
+        <a href="/auth/signup/" class="gt-btn gt-btn-primary gt-btn-sm">Get Started</a>
+      {% endif %}
+    </div>
+
+    <button class="gt-icon-btn gt-show-mobile" id="gt-mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+      <i data-lucide="menu"></i>
+    </button>
+  </div>
+
+  <div class="gt-mobile-menu" id="gt-mobile-menu" style="display:none;">
+    <a href="/#features" class="gt-mobile-link">Features</a>
+    <a href="/#how" class="gt-mobile-link">How It Works</a>
+    <a href="/demo/" class="gt-mobile-link">Demo</a>
+    <a href="/privacy/" class="gt-mobile-link">Privacy</a>
+    <hr class="gt-divider"/>
+    {% if user.is_authenticated %}
+      <a href="/app/" class="gt-mobile-link">Open Workspace</a>
+    {% else %}
+      <a href="/auth/login/" class="gt-mobile-link">Sign In</a>
+      <a href="/auth/signup/" class="gt-btn gt-btn-primary gt-btn-block gt-btn-sm">Get Started</a>
+    {% endif %}
+  </div>
+</nav>
+
+<style>
+  .gt-nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(11, 13, 20, 0.72);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--gt-border);
+  }
+  .gt-nav-inner { display: flex; align-items: center; justify-content: space-between; height: var(--gt-nav-h); }
+  .gt-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1.05rem; letter-spacing: -0.01em; }
+  .gt-brand-mark { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: var(--gt-r-sm); }
+  .gt-brand-text { color: var(--gt-text); }
+  .gt-brand-ai { background: var(--gt-grad-violet-cyan); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .gt-nav-links { display: flex; align-items: center; gap: var(--gt-space-6); }
+  .gt-nav-link { color: var(--gt-text-muted); font-size: 0.92rem; font-weight: 500; transition: color var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-nav-link:hover { color: var(--gt-text); }
+  .gt-nav-actions { display: flex; align-items: center; gap: var(--gt-space-3); }
+  .gt-mobile-menu {
+    padding: var(--gt-space-4) var(--gt-space-5) var(--gt-space-5);
+    background: var(--gt-bg-elev-2);
+    border-bottom: 1px solid var(--gt-border);
+    display: flex; flex-direction: column; gap: var(--gt-space-3);
+  }
+  .gt-mobile-link { color: var(--gt-text-muted); padding: 10px 4px; font-weight: 500; }
+  .gt-mobile-link:hover { color: var(--gt-text); }
+  @media (min-width: 769px) { .gt-nav-links, .gt-nav-actions { display: flex !important; } }
+  @media (max-width: 768px) { .gt-nav-links, .gt-nav-actions { display: none; } }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.getElementById('gt-mobile-menu-btn');
+    const menu = document.getElementById('gt-mobile-menu');
+    if (!btn || !menu) return;
+    btn.addEventListener('click', () => {
+      const isOpen = menu.style.display === 'flex';
+      menu.style.display = isOpen ? 'none' : 'flex';
+      btn.setAttribute('aria-expanded', String(!isOpen));
+    });
+  });
+</script>

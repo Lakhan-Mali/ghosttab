@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ project.title }} — GhostTab AI{% endblock %}
+
+{% block body %}
+<div class="gt-app-layout">
+  {% include "partials/sidebar.html" with active_nav='project' %}
+
+  <div class="gt-app-main">
+    <header class="gt-mobile-topbar">
+      <button class="gt-icon-btn" id="mobileSidebarToggle" aria-label="Open sidebar"><i data-lucide="menu"></i></button>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+      <span></span>
+    </header>
+
+    <main class="gt-app-content gt-workspace-content">
+      <div class="gt-workspace-header">
+        <div class="gt-workspace-header-left">
+          <a href="/app/" class="gt-back-link"><i data-lucide="arrow-left"></i> Workspace</a>
+          <div class="gt-workspace-title-row">
+            <h1 class="gt-h1 gt-workspace-title">{{ project.title }}</h1>
+            <a href="/app/{{ project.id }}/edit/" class="gt-icon-btn" aria-label="Edit project" title="Edit"><i data-lucide="pencil"></i></a>
+          </div>
+          {% if project.goal %}
+          <p class="gt-workspace-goal gt-muted"><i data-lucide="target"></i> {{ project.goal }}</p>
+          {% else %}
+          <p class="gt-workspace-goal gt-soft gt-italic">No goal yet — click "Infer goal" in the AI panel to generate one.</p>
+          {% endif %}
+        </div>
+        <div class="gt-workspace-header-stats">
+          <span class="gt-badge"><i data-lucide="layers"></i> {{ pages.count }} page{{ pages.count|pluralize }}</span>
+          <span class="gt-badge"><i data-lucide="list-todo"></i> {{ project.pending_action_count }} pending</span>
+          <span class="gt-badge gt-badge-{% if project.status == 'completed' %}success{% elif project.status == 'paused' %}warn{% else %}accent{% endif %}">
+            <span class="gt-dot"></span> {{ project.get_status_display }}
+          </span>
+          {% if project.is_demo %}<span class="gt-badge">Demo</span>{% endif %}
+        </div>
+      </div>
+
+      <!-- AI action bar (visible on all sizes) -->
+      <div class="gt-ai-bar">
+        <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="summarize"><i data-lucide="file-text"></i> Summarize</button>
+        <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="actions"><i data-lucide="wand-2"></i> Generate actions</button>
+        <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="compare"><i data-lucide="table-2"></i> Compare</button>
+        <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="goal"><i data-lucide="target"></i> Infer goal</button>
+        <button class="gt-btn gt-btn-ghost gt-btn-sm gt-hide-mobile" data-ai-modal="add-url"><i data-lucide="plus"></i> Add URL</button>
+        <button class="gt-btn gt-btn-ghost gt-btn-sm gt-hide-mobile" data-ai-modal="bulk-import"><i data-lucide="list-plus"></i> Bulk import</button>
+        <span class="gt-ai-bar-spacer"></span>
+        <form method="post" action="/app/{{ project.id }}/delete/" class="gt-delete-form"
+              onsubmit="return confirm('Delete this project and all its pages and actions?');">
+          {% csrf_token %}
+          <button type="submit" class="gt-icon-btn" aria-label="Delete project" title="Delete project"><i data-lucide="trash-2"></i></button>
+        </form>
+      </div>
+
+      <!-- 3-column workspace -->
+      <div class="gt-workspace-grid">
+        <!-- Column 1: Project navigation -->
+        <aside class="gt-workspace-nav">
+          <div class="gt-workspace-nav-section">
+            <div class="gt-side-section-label">On this page</div>
+            <a href="#summary" class="gt-side-link is-active"><i data-lucide="file-text"></i> Summary</a>
+            <a href="#pages" class="gt-side-link"><i data-lucide="layers"></i> Pages <span class="gt-side-badge gt-side-badge-soft">{{ pages.count }}</span></a>
+            <a href="#actions" class="gt-side-link"><i data-lucide="list-checks"></i> Actions <span class="gt-side-badge gt-side-badge-soft">{{ project.pending_action_count }}</span></a>
+            {% if latest_comparison %}<a href="#comparison" class="gt-side-link"><i data-lucide="table-2"></i> Comparison</a>{% endif %}
+          </div>
+
+          <div class="gt-workspace-nav-section">
+            <div class="gt-side-section-label">Progress</div>
+            <div class="gt-progress gt-workspace-progress"><div class="gt-progress-bar" style="width: {% widthratio project.completion_ratio 100 1 %}%"></div></div>
+            <div class="gt-workspace-progress-label gt-soft gt-mono">{% widthratio project.completion_ratio 100 1 %}% complete · {{ project.action_items.all|length }} action{{ project.action_items.all|length|pluralize }}</div>
+          </div>
+
+          <div class="gt-workspace-nav-section">
+            <div class="gt-side-section-label">Updated</div>
+            <div class="gt-soft gt-mono" style="font-size:0.78rem;">{{ project.updated_at|date:"M j, Y · H:i" }}</div>
+          </div>
+        </aside>
+
+        <!-- Column 2: Main content -->
+        <section class="gt-workspace-main">
+          <!-- Summary -->
+          <article class="gt-card gt-workspace-section" id="summary">
+            <header class="gt-workspace-section-head">
+              <h2 class="gt-h3"><i data-lucide="file-text"></i> Research summary</h2>
+              <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="summarize"><i data-lucide="refresh-cw"></i> Refresh</button>
+            </header>
+            <div id="summaryBody" class="gt-workspace-section-body">
+              {% if latest_summary %}
+                <p>{{ latest_summary.payload.summary }}</p>
+                {% if latest_summary.payload.key_findings %}
+                <div class="gt-findings">
+                  <div class="gt-findings-label gt-eyebrow">Key findings</div>
+                  <ul>{% for f in latest_summary.payload.key_findings %}<li>{{ f }}</li>{% endfor %}</ul>
+                </div>
+                {% endif %}
+                {% if latest_summary.payload.open_questions %}
+                <div class="gt-findings">
+                  <div class="gt-findings-label gt-eyebrow">Open questions</div>
+                  <ul>{% for q in latest_summary.payload.open_questions %}<li>{{ q }}</li>{% endfor %}</ul>
+                </div>
+                {% endif %}
+                <div class="gt-ai-meta gt-soft gt-mono">Provider: {{ latest_summary.provider }} · {{ latest_summary.created_at|timesince }} ago</div>
+              {% else %}
+                <p class="gt-muted">No summary yet. Click "Summarize" to generate a research summary from your saved pages.</p>
+              {% endif %}
+            </div>
+          </article>
+
+          <!-- Pages -->
+          <article class="gt-card gt-workspace-section" id="pages">
+            <header class="gt-workspace-section-head">
+              <h2 class="gt-h3"><i data-lucide="layers"></i> Saved pages <span class="gt-side-badge gt-side-badge-soft">{{ pages.count }}</span></h2>
+              <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-modal="add-url"><i data-lucide="plus"></i> Add URL</button>
+            </header>
+            <div class="gt-workspace-section-body">
+              {% if pages %}
+              <ul class="gt-page-list">
+                {% for page in pages %}
+                <li class="gt-page-item">
+                  <div class="gt-page-fav" style="background: {% cycle '#5eead4' '#a78bfa' '#fbbf24' '#4ade80' '#f87171' %}"></div>
+                  <div class="gt-page-body">
+                    <a href="{{ page.url }}" target="_blank" rel="noopener noreferrer" class="gt-page-title">{{ page.title|default:page.url }} <i data-lucide="external-link"></i></a>
+                    <div class="gt-page-meta">
+                      <span class="gt-page-domain gt-mono gt-soft">{{ page.domain }}</span>
+                      <span class="gt-soft">·</span>
+                      <span class="gt-soft">{{ page.created_at|date:"M j" }}</span>
+                      {% if page.note %}<span class="gt-soft">·</span><span class="gt-page-note gt-muted">{{ page.note }}</span>{% endif %}
+                    </div>
+                  </div>
+                  <div class="gt-page-actions">
+                    <a href="/app/{{ project.id }}/pages/{{ page.id }}/edit/" class="gt-icon-btn" aria-label="Edit page"><i data-lucide="pencil"></i></a>
+                    <form method="post" action="/app/{{ project.id }}/pages/{{ page.id }}/delete/" onsubmit="return confirm('Remove this page?');">
+                      {% csrf_token %}
+                      <button type="submit" class="gt-icon-btn" aria-label="Remove page"><i data-lucide="x"></i></button>
+                    </form>
+                  </div>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <div class="gt-empty">
+                <div class="gt-empty-icon"><i data-lucide="link-2"></i></div>
+                <p>No saved pages yet.</p>
+                <button class="gt-btn gt-btn-primary gt-btn-sm" data-ai-modal="add-url"><i data-lucide="plus"></i> Add your first URL</button>
+              </div>
+              {% endif %}
+            </div>
+          </article>
+
+          <!-- Actions -->
+          <article class="gt-card gt-workspace-section" id="actions">
+            <header class="gt-workspace-section-head">
+              <h2 class="gt-h3"><i data-lucide="list-checks"></i> Actions <span class="gt-side-badge gt-side-badge-soft">{{ project.pending_action_count }}</span></h2>
+              <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="actions"><i data-lucide="wand-2"></i> Generate</button>
+            </header>
+            <div class="gt-workspace-section-body">
+              <form method="post" action="/app/{{ project.id }}/actions/add/" class="gt-action-add-form">
+                {% csrf_token %}
+                <input type="text" name="title" class="gt-input gt-input-sm" placeholder="Add a custom action…" required>
+                <button type="submit" class="gt-icon-btn" aria-label="Add action"><i data-lucide="plus"></i></button>
+              </form>
+
+              {% if actions %}
+              <ul class="gt-action-list">
+                {% for a in actions %}
+                <li class="gt-action-item{% if a.status == 'done' %} is-done{% elif a.status == 'skipped' %} is-skipped{% endif %}">
+                  <form method="post" action="/app/{{ project.id }}/actions/{{ a.id }}/toggle/?json=1" class="gt-action-toggle">
+                    {% csrf_token %}
+                    <button type="submit" class="gt-action-check" aria-label="Toggle complete">
+                      {% if a.status == 'done' %}<i data-lucide="check-circle-2"></i>{% elif a.status == 'in_progress' %}<i data-lucide="circle-dot"></i>{% elif a.status == 'skipped' %}<i data-lucide="minus-circle"></i>{% else %}<i data-lucide="circle"></i>{% endif %}
+                    </button>
+                  </form>
+                  <div class="gt-action-body">
+                    <div class="gt-action-title">{{ a.title }}</div>
+                    {% if a.rationale %}<div class="gt-action-rat gt-muted">{{ a.rationale }}</div>{% endif %}
+                    <div class="gt-action-meta gt-soft gt-mono">
+                      {% if a.ai_generated %}<span><i data-lucide="sparkles" style="width:11px;height:11px;"></i> AI-generated</span>{% endif %}
+                      <span>Added {{ a.created_at|timesince }} ago</span>
+                      {% if a.completed_at %}<span>· Completed {{ a.completed_at|timesince }} ago</span>{% endif %}
+                    </div>
+                  </div>
+                  <form method="post" action="/app/{{ project.id }}/actions/{{ a.id }}/delete/" onsubmit="return confirm('Remove this action?');">
+                    {% csrf_token %}
+                    <button type="submit" class="gt-icon-btn gt-action-delete" aria-label="Delete action"><i data-lucide="trash-2"></i></button>
+                  </form>
+                </li>
+                {% endfor %}
+              </ul>
+              {% else %}
+              <p class="gt-muted">No actions yet. Generate AI-suggested actions, or add one manually above.</p>
+              {% endif %}
+            </div>
+          </article>
+
+          <!-- Comparison -->
+          {% if latest_comparison %}
+          <article class="gt-card gt-workspace-section" id="comparison">
+            <header class="gt-workspace-section-head">
+              <h2 class="gt-h3"><i data-lucide="table-2"></i> Comparison</h2>
+              <button class="gt-btn gt-btn-ghost gt-btn-sm" data-ai-action="compare"><i data-lucide="refresh-cw"></i> Refresh</button>
+            </header>
+            <div class="gt-workspace-section-body">
+              <div class="gt-table-wrap">
+                <table class="gt-table">
+                  <thead>
+                    <tr><th>Option</th>{% for col in latest_comparison.payload.columns %}<th>{{ col }}</th>{% endfor %}</tr>
+                  </thead>
+                  <tbody>
+                    {% for row in latest_comparison.payload.rows %}
+                    <tr><td class="gt-table-name">{{ row.name }}</td>{% for v in row.values %}<td>{{ v }}</td>{% endfor %}</tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+              <div class="gt-ai-meta gt-soft gt-mono">Provider: {{ latest_comparison.provider }} · {{ latest_comparison.created_at|timesince }} ago</div>
+            </div>
+          </article>
+          {% endif %}
+        </section>
+
+        <!-- Column 3: AI insights panel -->
+        <aside class="gt-workspace-insights">
+          <div class="gt-card gt-insights-card">
+            <header class="gt-insights-head">
+              <div class="gt-insights-icon"><i data-lucide="sparkles"></i></div>
+              <div>
+                <div class="gt-h4">AI Insights</div>
+                <div class="gt-soft gt-mono" style="font-size:0.74rem;">
+                  {% if AI_DEMO_MODE %}Demo mode · No provider set{% else %}Provider: {{ AI_PROVIDER|default:"demo" }}{% endif %}
+                </div>
+              </div>
+            </header>
+
+            <div class="gt-insights-actions">
+              <button class="gt-btn gt-btn-primary gt-btn-block gt-btn-sm" data-ai-action="summarize"><i data-lucide="file-text"></i> Summarize research</button>
+              <button class="gt-btn gt-btn-ghost gt-btn-block gt-btn-sm" data-ai-action="actions"><i data-lucide="wand-2"></i> Generate next actions</button>
+              <button class="gt-btn gt-btn-ghost gt-btn-block gt-btn-sm" data-ai-action="compare"><i data-lucide="table-2"></i> Build comparison</button>
+              <button class="gt-btn gt-btn-ghost gt-btn-block gt-btn-sm" data-ai-action="goal"><i data-lucide="target"></i> Infer project goal</button>
+            </div>
+
+            <div class="gt-insights-divider"></div>
+
+            <div class="gt-insights-tip">
+              <div class="gt-eyebrow">Suggested next step</div>
+              {% if project.next_action %}
+                <div class="gt-insights-tip-text">{{ project.next_action.title }}</div>
+                <a href="#actions" class="gt-link gt-mono" style="font-size:0.78rem;">Jump to actions →</a>
+              {% elif pages %}
+                <div class="gt-insights-tip-text gt-muted">Generate next actions to get a concrete first step.</div>
+              {% else %}
+                <div class="gt-insights-tip-text gt-muted">Add 2-3 pages to give the AI something to work with.</div>
+              {% endif %}
+            </div>
+
+            <div class="gt-insights-divider"></div>
+
+            <div class="gt-insights-meta gt-soft">
+              <div class="gt-mono" style="font-size:0.72rem;">Project #{{ project.id }}</div>
+              <div class="gt-mono" style="font-size:0.72rem;">Created {{ project.created_at|date:"M j" }}</div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal templates are rendered by JS -->
+
+<style>
+  .gt-workspace-content { padding: var(--gt-space-5) var(--gt-space-7); max-width: 1600px; }
+
+  .gt-workspace-header { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--gt-space-5); margin-bottom: var(--gt-space-5); flex-wrap: wrap; }
+  .gt-workspace-header-stats { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .gt-workspace-header-stats .lucide { width: 12px; height: 12px; }
+  .gt-workspace-title-row { display: flex; align-items: center; gap: var(--gt-space-3); margin: 4px 0; }
+  .gt-workspace-title { margin: 0; }
+  .gt-workspace-goal { display: flex; gap: 8px; align-items: flex-start; max-width: 720px; margin-top: 4px; font-size: 0.95rem; }
+  .gt-workspace-goal .lucide { width: 16px; height: 16px; color: var(--gt-accent-soft); flex-shrink: 0; margin-top: 3px; }
+
+  .gt-ai-bar { display: flex; align-items: center; gap: var(--gt-space-2); padding: var(--gt-space-3) 0; margin-bottom: var(--gt-space-5); border-bottom: 1px solid var(--gt-border); flex-wrap: wrap; }
+  .gt-ai-bar .gt-btn .lucide { width: 14px; height: 14px; }
+  .gt-ai-bar-spacer { flex: 1; }
+  .gt-delete-form { display: inline; }
+
+  .gt-workspace-grid { display: grid; grid-template-columns: 220px 1fr 320px; gap: var(--gt-space-5); align-items: start; }
+  .gt-workspace-nav { position: sticky; top: var(--gt-space-5); display: flex; flex-direction: column; gap: var(--gt-space-5); }
+  .gt-workspace-nav-section { display: flex; flex-direction: column; gap: 4px; }
+  .gt-workspace-nav .gt-side-link { padding: 8px 10px; font-size: 0.84rem; }
+  .gt-workspace-nav .gt-side-link .lucide { width: 14px; height: 14px; }
+  .gt-side-badge-soft { background: var(--gt-surface); color: var(--gt-text-soft); padding: 1px 6px; border-radius: 999px; font-size: 0.68rem; margin-left: auto; }
+  .gt-workspace-progress { margin-bottom: 6px; }
+  .gt-workspace-progress-label { font-size: 0.72rem; }
+
+  .gt-workspace-main { display: flex; flex-direction: column; gap: var(--gt-space-5); min-width: 0; }
+  .gt-workspace-section { padding: var(--gt-space-5); }
+  .gt-workspace-section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--gt-space-4); gap: var(--gt-space-3); }
+  .gt-workspace-section-head .gt-h3 .lucide { width: 16px; height: 16px; color: var(--gt-accent-soft); vertical-align: -2px; margin-right: 6px; }
+  .gt-workspace-section-head .gt-side-badge-soft { margin-left: 6px; }
+  .gt-workspace-section-body p { line-height: 1.6; }
+  .gt-findings { margin-top: var(--gt-space-4); }
+  .gt-findings-label { margin-bottom: 6px; }
+  .gt-findings ul { padding-left: 18px; margin: 0; color: var(--gt-text-muted); }
+  .gt-findings li { margin-bottom: 4px; line-height: 1.5; }
+  .gt-ai-meta { margin-top: var(--gt-space-4); font-size: 0.74rem; }
+
+  .gt-page-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .gt-page-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px; background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); transition: border-color var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-page-item:hover { border-color: var(--gt-border-strong); }
+  .gt-page-fav { width: 28px; height: 28px; border-radius: var(--gt-r-sm); flex-shrink: 0; margin-top: 2px; }
+  .gt-page-body { flex: 1; min-width: 0; }
+  .gt-page-title { font-weight: 500; color: var(--gt-text); font-size: 0.92rem; display: inline-flex; align-items: center; gap: 4px; }
+  .gt-page-title .lucide { width: 11px; height: 11px; opacity: 0.6; }
+  .gt-page-title:hover { color: var(--gt-accent-soft); }
+  .gt-page-meta { font-size: 0.76rem; margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .gt-page-domain { font-size: 0.74rem; }
+  .gt-page-note { font-style: italic; }
+  .gt-page-actions { display: flex; gap: 4px; flex-shrink: 0; }
+  .gt-page-actions .gt-icon-btn { width: 28px; height: 28px; }
+  .gt-page-actions .gt-icon-btn .lucide { width: 13px; height: 13px; }
+
+  .gt-action-add-form { display: flex; gap: 6px; margin-bottom: var(--gt-space-4); }
+  .gt-action-add-form .gt-icon-btn { width: 32px; height: 32px; flex-shrink: 0; }
+  .gt-action-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+  .gt-action-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); transition: all var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-action-item:hover { border-color: var(--gt-border-strong); }
+  .gt-action-item.is-done { background: rgba(74, 222, 128, 0.05); border-color: rgba(74, 222, 128, 0.20); }
+  .gt-action-item.is-skipped { opacity: 0.55; }
+  .gt-action-toggle { background: none; padding: 0; margin: 0; }
+  .gt-action-check { background: none; padding: 0; cursor: pointer; color: var(--gt-text-soft); }
+  .gt-action-check .lucide { width: 18px; height: 18px; }
+  .gt-action-check:hover { color: var(--gt-accent-soft); }
+  .gt-action-item.is-done .gt-action-check .lucide { color: var(--gt-success); }
+  .gt-action-body { flex: 1; min-width: 0; }
+  .gt-action-title { font-size: 0.9rem; color: var(--gt-text); line-height: 1.4; }
+  .gt-action-item.is-done .gt-action-title { text-decoration: line-through; color: var(--gt-text-muted); }
+  .gt-action-item.is-skipped .gt-action-title { text-decoration: line-through; }
+  .gt-action-rat { font-size: 0.78rem; margin-top: 4px; line-height: 1.45; }
+  .gt-action-meta { font-size: 0.7rem; margin-top: 6px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .gt-action-meta .lucide { vertical-align: -1px; }
+  .gt-action-delete { width: 28px; height: 28px; opacity: 0; transition: opacity var(--gt-dur-fast) var(--gt-ease-out); }
+  .gt-action-item:hover .gt-action-delete { opacity: 1; }
+  .gt-action-delete .lucide { width: 13px; height: 13px; }
+  .gt-action-delete:hover { color: var(--gt-danger); }
+
+  /* Insights panel */
+  .gt-workspace-insights { position: sticky; top: var(--gt-space-5); }
+  .gt-insights-card { padding: var(--gt-space-5); }
+  .gt-insights-head { display: flex; align-items: center; gap: 12px; margin-bottom: var(--gt-space-4); }
+  .gt-insights-icon { width: 36px; height: 36px; border-radius: var(--gt-r-md); background: var(--gt-grad-violet-deep); border: 1px solid var(--gt-border-accent); display: flex; align-items: center; justify-content: center; color: var(--gt-accent-soft); }
+  .gt-insights-icon .lucide { width: 18px; height: 18px; }
+  .gt-insights-actions { display: flex; flex-direction: column; gap: 6px; }
+  .gt-insights-divider { height: 1px; background: var(--gt-border); margin: var(--gt-space-4) 0; }
+  .gt-insights-tip { padding: var(--gt-space-3); background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); }
+  .gt-insights-tip-text { font-size: 0.86rem; margin: 6px 0 8px; line-height: 1.45; color: var(--gt-text); }
+  .gt-insights-meta { display: flex; flex-direction: column; gap: 4px; }
+
+  @media (max-width: 1280px) {
+    .gt-workspace-grid { grid-template-columns: 1fr 320px; }
+    .gt-workspace-nav { display: none; }
+  }
+  @media (max-width: 1024px) {
+    .gt-workspace-grid { grid-template-columns: 1fr; }
+    .gt-workspace-insights { position: static; }
+    .gt-workspace-content { padding: var(--gt-space-5); }
+  }
+  @media (max-width: 640px) {
+    .gt-workspace-header { flex-direction: column; }
+    .gt-workspace-header-stats { width: 100%; }
+    .gt-ai-bar { gap: 6px; }
+  }
+</style>
+
+<!-- Modal: Add URL -->
+<template id="modal-add-url">
+  <h2 class="gt-h3" style="margin-bottom:4px;">Add a URL</h2>
+  <p class="gt-muted" style="font-size:0.86rem; margin-bottom: var(--gt-space-4);">Save a single page to this project.</p>
+  <form method="post" action="/app/{{ project.id }}/pages/add/" id="addUrlForm">
+    {% csrf_token %}
+    <div class="gt-field" style="margin-bottom: 12px;">
+      <label class="gt-label" for="m_url">URL</label>
+      <input type="url" id="m_url" name="url" class="gt-input" required placeholder="https://example.com/article">
+    </div>
+    <div class="gt-field" style="margin-bottom: 12px;">
+      <label class="gt-label" for="m_title">Title <span class="gt-soft">(optional)</span></label>
+      <input type="text" id="m_title" name="title" class="gt-input" placeholder="Page title">
+    </div>
+    <div class="gt-field" style="margin-bottom: 12px;">
+      <label class="gt-label" for="m_note">Note <span class="gt-soft">(optional)</span></label>
+      <textarea id="m_note" name="note" class="gt-textarea" rows="2" placeholder="Why did you save this?"></textarea>
+    </div>
+    <div class="gt-field" style="margin-bottom: 16px;">
+      <label class="gt-label" for="m_text">Pasted text <span class="gt-soft">(optional — used as AI context)</span></label>
+      <textarea id="m_text" name="raw_text" class="gt-textarea" rows="4" placeholder="Paste relevant text from the page"></textarea>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button type="submit" class="gt-btn gt-btn-primary"><i data-lucide="plus"></i> Add page</button>
+      <button type="button" class="gt-btn gt-btn-ghost" data-modal-close>Cancel</button>
+    </div>
+  </form>
+</template>
+
+<!-- Modal: Bulk import -->
+<template id="modal-bulk-import">
+  <h2 class="gt-h3" style="margin-bottom:4px;">Bulk import URLs</h2>
+  <p class="gt-muted" style="font-size:0.86rem; margin-bottom: var(--gt-space-4);">One URL per line. Up to 50 at a time.</p>
+  <form method="post" action="/app/{{ project.id }}/pages/bulk/">
+    {% csrf_token %}
+    <input type="hidden" name="project_id" value="{{ project.id }}">
+    <div class="gt-field" style="margin-bottom: 16px;">
+      <textarea name="urls" class="gt-textarea" rows="8" required placeholder="https://example.com/page-1&#10;https://example.com/page-2&#10;https://example.com/page-3"></textarea>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <button type="submit" class="gt-btn gt-btn-primary"><i data-lucide="list-plus"></i> Import URLs</button>
+      <button type="button" class="gt-btn gt-btn-ghost" data-modal-close>Cancel</button>
+    </div>
+  </form>
+</template>
+
+<script>
+  // CSRF token for AI calls
+  const CSRF_TOKEN = '{{ csrf_token }}';
+  const PROJECT_ID = {{ project.id }};
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Sidebar logic is centralized in templates/partials/sidebar.html
+
+    // Modal openers
+    document.querySelectorAll('[data-ai-modal]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const name = btn.dataset.aiModal;
+        const tpl = document.getElementById(`modal-${name}`);
+        if (!tpl) return;
+        const backdrop = window.GhostTab.Modal.open(tpl.innerHTML);
+        backdrop.querySelectorAll('[data-modal-close]').forEach(b => b.addEventListener('click', () => window.GhostTab.Modal.close(backdrop)));
+        if (window.lucide) window.lucide.createIcons();
+      });
+    });
+
+    // AI action buttons
+    document.querySelectorAll('[data-ai-action]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const action = btn.dataset.aiAction;
+        const url = `/api/ai/${action}/${PROJECT_ID}/`;
+        const original = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<i data-lucide="loader-2" class="gt-spin"></i> Working…`;
+        if (window.lucide) window.lucide.createIcons();
+
+        // Show skeleton in the target section
+        const target = document.querySelector(`#${action === 'actions' ? 'actions' : action === 'summarize' ? 'summary' : action === 'compare' ? 'comparison' : 'summary'} .gt-workspace-section-body`);
+        if (target && action !== 'goal') target.innerHTML = `<div class="gt-skeleton" style="height:12px;margin-bottom:8px;"></div><div class="gt-skeleton" style="height:12px;margin-bottom:8px;width:80%;"></div><div class="gt-skeleton" style="height:12px;width:60%;"></div>`;
+
+        try {
+          const data = await window.GhostTab.apiPost(url, {});
+          if (action === 'summarize') {
+            const r = data.result;
+            target.innerHTML = `<p>${r.summary}</p>` +
+              (r.key_findings?.length ? `<div class="gt-findings"><div class="gt-eyebrow">Key findings</div><ul>${r.key_findings.map(f=>`<li>${f}</li>`).join('')}</ul></div>` : '') +
+              (r.open_questions?.length ? `<div class="gt-findings"><div class="gt-eyebrow">Open questions</div><ul>${r.open_questions.map(q=>`<li>${q}</li>`).join('')}</ul></div>` : '') +
+              `<div class="gt-ai-meta gt-soft gt-mono">Provider: ${r.provider} · just now</div>`;
+            window.GhostTab.Toast.success('Summary generated.');
+          } else if (action === 'actions') {
+            // Reload the page to show new actions cleanly
+            window.GhostTab.Toast.success(`Generated ${data.result.actions.length} action(s).`);
+            setTimeout(() => location.reload(), 800);
+          } else if (action === 'compare') {
+            const r = data.result;
+            // Insert comparison table or refresh existing
+            const existing = document.querySelector('#comparison');
+            if (existing) {
+              existing.querySelector('.gt-workspace-section-body').innerHTML =
+                `<div class="gt-table-wrap"><table class="gt-table"><thead><tr><th>Option</th>${r.columns.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${r.rows.map(row=>`<tr><td class="gt-table-name">${row.name}</td>${row.values.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table></div><div class="gt-ai-meta gt-soft gt-mono">Provider: ${r.provider} · just now</div>`;
+            } else {
+              window.GhostTab.Toast.success('Comparison built — reloading to show it.');
+              setTimeout(() => location.reload(), 800);
+            }
+          } else if (action === 'goal') {
+            // Reload to show updated goal
+            window.GhostTab.Toast.success('Goal inferred.');
+            setTimeout(() => location.reload(), 800);
+          }
+        } catch (e) {
+          window.GhostTab.Toast.error(e.message);
+          if (target) target.innerHTML = `<p class="gt-muted">AI request failed. ${e.message}</p>`;
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = original;
+          if (window.lucide) window.lucide.createIcons();
+        }
+      });
+    });
+
+    // Action toggle (ajax)
+    document.querySelectorAll('.gt-action-toggle').forEach(form => {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        try {
+          const data = await fetch(form.action, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF_TOKEN },
+            body: new FormData(form),
+          }).then(r => r.json());
+          if (data.ok) {
+            const li = form.closest('.gt-action-item');
+            const icon = form.querySelector('i');
+            if (data.status === 'done') {
+              li.classList.add('is-done');
+              icon.setAttribute('data-lucide', 'check-circle-2');
+              icon.style.color = 'var(--gt-success)';
+            } else {
+              li.classList.remove('is-done');
+              icon.setAttribute('data-lucide', 'circle');
+              icon.style.color = '';
+            }
+            if (window.lucide) window.lucide.createIcons();
+          }
+        } catch (e) {
+          // fall back to full submit
+          form.removeEventListener('submit', arguments.callee);
+          form.submit();
+        }
+      });
+    });
+
+    // Section scroll-spy
+    const navLinks = document.querySelectorAll('.gt-workspace-nav .gt-side-link');
+    const sections = ['summary','pages','actions','comparison'].map(id => document.getElementById(id)).filter(Boolean);
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            navLinks.forEach(l => l.classList.toggle('is-active', l.getAttribute('href') === `#${e.target.id}`));
+          }
+        });
+      }, { rootMargin: '-20% 0px -70% 0px' });
+      sections.forEach(s => io.observe(s));
+    }
+  });
+</script>
+{% endblock %}

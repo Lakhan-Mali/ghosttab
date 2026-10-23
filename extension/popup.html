@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GhostTab AI</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header class="ext-header">
+    <div class="ext-brand">
+      <span class="ext-mark">
+        <svg width="16" height="16" viewBox="0 0 22 22" fill="none">
+          <path d="M4 4 H18 V8 H14 V18 H8 V8 H4 Z" fill="url(#ext-g)"/>
+          <defs><linearGradient id="ext-g" x1="0" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#8a5cf6"/><stop offset="1" stop-color="#5eead4"/>
+          </linearGradient></defs>
+        </svg>
+      </span>
+      <span class="ext-brand-text">GhostTab <span class="ext-brand-ai">AI</span></span>
+    </div>
+    <button id="optionsBtn" class="ext-icon-btn" title="Settings">⚙</button>
+  </header>
+
+  <div id="notConfigured" class="ext-state ext-state-error" hidden>
+    <p>Connect your GhostTab AI workspace first.</p>
+    <button id="openOptions" class="ext-btn ext-btn-primary">Connect</button>
+  </div>
+
+  <div id="notAuthenticated" class="ext-state ext-state-error" hidden>
+    <p>Sign in to your GhostTab AI workspace.</p>
+    <form id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button type="submit" class="ext-btn ext-btn-primary">Sign in</button>
+    </form>
+  </div>
+
+  <div id="main" class="ext-main" hidden>
+    <div class="ext-section">
+      <div class="ext-row">
+        <strong id="tabCount">0 tabs</strong>
+        <button id="refreshBtn" class="ext-link">refresh</button>
+      </div>
+      <div class="ext-tabs-scroll">
+        <ul id="tabList" class="ext-tab-list"></ul>
+      </div>
+    </div>
+
+    <div class="ext-section">
+      <label class="ext-label" for="projectTitle">Project title</label>
+      <input type="text" id="projectTitle" placeholder="e.g. Compare laptops for design work" />
+    </div>
+
+    <div class="ext-section ext-checkbox-row">
+      <label><input type="checkbox" id="autoGroup" checked> Auto-infer goal</label>
+    </div>
+
+    <button id="saveBtn" class="ext-btn ext-btn-primary ext-btn-block">Save to GhostTab AI</button>
+    <div id="status" class="ext-status"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

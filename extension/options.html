@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GhostTab AI — Options</title>
+  <link rel="stylesheet" href="popup.css" />
+  <style>body { width: 100%; max-width: 480px; margin: 40px auto; padding: 0 20px; }</style>
+</head>
+<body>
+  <header class="ext-header" style="margin-bottom: 24px;">
+    <div class="ext-brand">
+      <span class="ext-brand-text">GhostTab <span class="ext-brand-ai">AI</span> — Connect</span>
+    </div>
+  </header>
+  <p style="color: var(--text-muted); margin-bottom: 16px;">
+    Point the extension at your GhostTab AI instance. You'll sign in with your GhostTab AI account
+    the first time you open the popup.
+  </p>
+  <form id="optionsForm">
+    <div class="ext-section">
+      <label class="ext-label" for="gtBase">GhostTab AI URL</label>
+      <input type="text" id="gtBase" placeholder="http://localhost:8000" required>
+    </div>
+    <div class="ext-section">
+      <label class="ext-label" for="gtToken">Extension token <span style="color:var(--text-soft);">(optional — only if your instance requires one)</span></label>
+      <input type="text" id="gtToken" placeholder="leave blank unless your admin set GHOSTTAB_EXTENSION_TOKEN">
+    </div>
+    <button type="submit" class="ext-btn ext-btn-primary">Save</button>
+    <div id="optsStatus" class="ext-status"></div>
+  </form>
+  <script>
+    (async () => {
+      const { gtBase = 'http://localhost:8000', gtToken = '' } = await chrome.storage.local.get(['gtBase', 'gtToken']);
+      document.getElementById('gtBase').value = gtBase;
+      document.getElementById('gtToken').value = gtToken;
+      document.getElementById('optionsForm').onsubmit = async (e) => {
+        e.preventDefault();
+        await chrome.storage.local.set({
+          gtBase: document.getElementById('gtBase').value.trim(),
+          gtToken: document.getElementById('gtToken').value.trim(),
+        });
+        const s = document.getElementById('optsStatus');
+        s.textContent = 'Saved.';
+        s.className = 'ext-status success';
+        setTimeout(() => { s.textContent = ''; s.className = 'ext-status'; }, 1500);
+      };
+    })();
+  </script>
+</body>
+</html>

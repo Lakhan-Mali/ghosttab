@@ -1,0 +1,41 @@
+/* =========================================================================
+   GhostTab AI — App layout (shared across all authenticated pages)
+   Include this in <head> for any page that uses .gt-app-layout + sidebar.
+   ========================================================================= */
+
+.gt-app-layout { display: flex; min-height: 100vh; }
+.gt-app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Mobile topbar — hidden on desktop, shown on mobile via media query. */
+.gt-mobile-topbar {
+  display: none;
+  padding: var(--gt-space-2) var(--gt-space-4);
+  border-bottom: 1px solid var(--gt-border);
+  background: var(--gt-bg-elev-1);
+  align-items: center;
+  gap: var(--gt-space-3);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  min-height: 52px;
+}
+.gt-mobile-topbar .gt-brand-text { flex: 1; font-weight: 700; }
+
+.gt-app-content {
+  padding: var(--gt-space-6) var(--gt-space-7);
+  max-width: 1280px;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .gt-mobile-topbar { display: flex !important; }
+  .gt-app-content { padding: var(--gt-space-5); }
+}
+@media (max-width: 768px) {
+  .gt-app-content { padding: var(--gt-space-4); }
+}

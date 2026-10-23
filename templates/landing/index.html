@@ -1,0 +1,589 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block body %}
+{% include "partials/nav.html" %}
+
+<!-- ============ HERO ============ -->
+<section class="gt-hero">
+  <div class="gt-hero-bg" aria-hidden="true"></div>
+  <div class="gt-container gt-hero-inner">
+    <div class="gt-hero-copy gt-stagger">
+      <span class="gt-eyebrow gt-hero-eyebrow">
+        <span class="gt-dot" style="color: var(--gt-cyan);"></span>
+        The unfinished-tab recovery workspace
+      </span>
+      <h1 class="gt-display gt-hero-headline">
+        Your unfinished tabs deserve a <span class="gradient-text">second chance</span>.
+      </h1>
+      <p class="gt-hero-sub gt-muted">
+        Turn scattered browser tabs into organized projects, clear next steps, and
+        work you can actually finish. Pick up where your mind left off.
+      </p>
+      <div class="gt-hero-cta">
+        <a href="/auth/signup/" class="gt-btn gt-btn-primary gt-btn-lg">
+          <i data-lucide="sparkles"></i> Build My Workspace
+        </a>
+        <a href="/demo/" class="gt-btn gt-btn-ghost gt-btn-lg">
+          <i data-lucide="play"></i> Explore the Demo
+        </a>
+      </div>
+      <div class="gt-hero-meta gt-soft">
+        <span><i data-lucide="shield-check"></i> No browser-history access without your explicit action</span>
+        <span><i data-lucide="zap"></i> Deterministic demo mode — no API key required</span>
+      </div>
+    </div>
+
+    <!-- Interactive product preview -->
+    <div class="gt-hero-preview gt-anim-fade-up" style="animation-delay: 320ms;">
+      <div class="gt-preview-card" id="heroPreview">
+        <div class="gt-preview-bar">
+          <span class="gt-preview-dot" style="background:#ff5f57"></span>
+          <span class="gt-preview-dot" style="background:#febc2e"></span>
+          <span class="gt-preview-dot" style="background:#28c840"></span>
+          <span class="gt-preview-title">ghosttab — workspace</span>
+        </div>
+        <div class="gt-preview-body">
+          <div class="gt-preview-stage">
+            <!-- Step 1: scattered tabs -->
+            <div class="gt-preview-step" data-step="1">
+              <div class="gt-step-label">Step 1 · Scattered tabs</div>
+              <div class="gt-tabs-cluster" id="scatteredTabs">
+                <div class="gt-tab-chip" data-group="laptop"><span class="gt-tab-fav" style="background:#5eead4"></span>ThinkPad T14s review</div>
+                <div class="gt-tab-chip" data-group="laptop"><span class="gt-tab-fav" style="background:#a78bfa"></span>Dell XPS 14 OLED</div>
+                <div class="gt-tab-chip" data-group="apt"><span class="gt-tab-fav" style="background:#fbbf24"></span>Highland Park 2BR</div>
+                <div class="gt-tab-chip" data-group="laptop"><span class="gt-tab-fav" style="background:#5eead4"></span>Framework 13 laptop</div>
+                <div class="gt-tab-chip" data-group="apt"><span class="gt-tab-fav" style="background:#fbbf24"></span>Maple Court Apartments</div>
+                <div class="gt-tab-chip" data-group="learn"><span class="gt-tab-fav" style="background:#4ade80"></span>Use The Index, Luke!</div>
+                <div class="gt-tab-chip" data-group="learn"><span class="gt-tab-fav" style="background:#4ade80"></span>PostgreSQL performance tips</div>
+                <div class="gt-tab-chip" data-group="apt"><span class="gt-tab-fav" style="background:#fbbf24"></span>Riverside Lofts</div>
+              </div>
+            </div>
+
+            <!-- Step 2: grouped into projects -->
+            <div class="gt-preview-step gt-hidden" data-step="2">
+              <div class="gt-step-label">Step 2 · Grouped by intent</div>
+              <div class="gt-projects-cluster" id="groupedProjects">
+                <div class="gt-mini-project" data-group="laptop">
+                  <div class="gt-mini-project-head">
+                    <span class="gt-mini-tag" style="--tag:#5eead4">3 pages</span>
+                    <span class="gt-mini-title">Find a 14" laptop for design</span>
+                  </div>
+                </div>
+                <div class="gt-mini-project" data-group="apt">
+                  <div class="gt-mini-project-head">
+                    <span class="gt-mini-tag" style="--tag:#fbbf24">3 pages</span>
+                    <span class="gt-mini-title">Apartment hunt near transit</span>
+                  </div>
+                </div>
+                <div class="gt-mini-project" data-group="learn">
+                  <div class="gt-mini-project-head">
+                    <span class="gt-mini-tag" style="--tag:#4ade80">2 pages</span>
+                    <span class="gt-mini-title">Modern PostgreSQL performance</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: AI goal + actions -->
+            <div class="gt-preview-step gt-hidden" data-step="3">
+              <div class="gt-step-label">Step 3 · AI goal & next actions</div>
+              <div class="gt-goal-card">
+                <div class="gt-goal-label">Inferred goal</div>
+                <div class="gt-goal-text">Pick a 14-inch laptop under $1,800 with a color-accurate display, 16GB+ RAM, and good Linux compatibility.</div>
+              </div>
+              <div class="gt-actions-mini">
+                <div class="gt-action-mini"><i data-lucide="circle"></i> Shortlist to two finalists: XPS 14 OLED vs. ThinkPad T14s</div>
+                <div class="gt-action-mini"><i data-lucide="circle"></i> Verify Linux compatibility for XPS 14's Intel Arc iGPU</div>
+                <div class="gt-action-mini is-done"><i data-lucide="check-circle-2"></i> Decide and place the order before the sale ends</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="gt-preview-controls">
+            <button class="gt-preview-btn" id="heroReplay"><i data-lucide="rotate-ccw"></i> Replay</button>
+            <div class="gt-preview-progress"><div class="gt-preview-progress-bar" id="heroProgress"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="gt-preview-glow" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROBLEM → SOLUTION ============ -->
+<section class="gt-section" id="problem">
+  <div class="gt-container">
+    <div class="gt-section-head" data-reveal>
+      <span class="gt-eyebrow">The problem</span>
+      <h2 class="gt-h1 gt-section-title">Forty-seven tabs. Zero memory of why you opened any of them.</h2>
+      <p class="gt-section-lead gt-muted">
+        Research happens in fragments. A laptop comparison here, an apartment listing there, a tutorial
+        you swore you'd come back to. Browser tabs are great at being opened and terrible at being finished.
+      </p>
+    </div>
+
+    <div class="gt-problem-grid" data-reveal>
+      <div class="gt-card gt-problem-card">
+        <div class="gt-problem-icon"><i data-lucide="chrome"></i></div>
+        <h3 class="gt-h3">Open-loop research</h3>
+        <p class="gt-muted">You opened 12 tabs to compare monitors. Three days later you can't remember which review said what, or what you were trying to decide.</p>
+      </div>
+      <div class="gt-card gt-problem-card">
+        <div class="gt-problem-icon"><i data-lucide="search-x"></i></div>
+        <h3 class="gt-h3">Lost intent</h3>
+        <p class="gt-muted">The page is still there. The reason you opened it isn't. Without context, a saved tab is just noise.</p>
+      </div>
+      <div class="gt-card gt-problem-card">
+        <div class="gt-problem-icon"><i data-lucide="list-todo"></i></div>
+        <h3 class="gt-h3">No clear next step</h3>
+        <p class="gt-muted">Even when you remember the goal, "what should I do next?" is the question that stops the work from finishing.</p>
+      </div>
+    </div>
+
+    <div class="gt-solution-arrow" data-reveal>
+      <i data-lucide="arrow-down"></i>
+    </div>
+
+    <div class="gt-card gt-solution-card" data-reveal>
+      <div class="gt-solution-inner">
+        <div class="gt-solution-copy">
+          <span class="gt-eyebrow gt-badge-accent" style="padding: 4px 10px; border-radius: 999px;">The solution</span>
+          <h3 class="gt-h2 gt-solution-title">GhostTab AI turns tabs into a workspace with memory.</h3>
+          <p class="gt-muted">Save the pages that matter. GhostTab AI groups them by intent, surfaces the goal behind each cluster, and writes the next action that actually finishes the work.</p>
+          <a href="/auth/signup/" class="gt-btn gt-btn-primary">Build My Workspace <i data-lucide="arrow-right"></i></a>
+        </div>
+        <div class="gt-solution-visual">
+          <div class="gt-visual-before">
+            <div class="gt-tab-mini">thinkpad-review</div>
+            <div class="gt-tab-mini">apartment-1</div>
+            <div class="gt-tab-mini">xps-14-oled</div>
+            <div class="gt-tab-mini">postgres-indexes</div>
+            <div class="gt-tab-mini">highland-park</div>
+            <div class="gt-tab-mini">framework-13</div>
+            <div class="gt-tab-mini">+ 41 more</div>
+          </div>
+          <div class="gt-visual-arrow"><i data-lucide="arrow-right"></i></div>
+          <div class="gt-visual-after">
+            <div class="gt-after-card"><span class="gt-dot" style="color:#5eead4"></span> Laptop research · 3 pages · 1 action left</div>
+            <div class="gt-after-card"><span class="gt-dot" style="color:#fbbf24"></span> Apartment hunt · 3 pages · 2 tours to schedule</div>
+            <div class="gt-after-card"><span class="gt-dot" style="color:#4ade80"></span> PostgreSQL study · 2 pages · 1 chapter done</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FEATURE SHOWCASE ============ -->
+<section class="gt-section" id="features">
+  <div class="gt-container">
+    <div class="gt-section-head" data-reveal>
+      <span class="gt-eyebrow">Features</span>
+      <h2 class="gt-h1 gt-section-title">A focused toolkit for finishing research.</h2>
+      <p class="gt-section-lead gt-muted">Not another notebook. Not another tab manager. A workspace that turns scattered pages into decisions.</p>
+    </div>
+
+    <div class="gt-feature-grid">
+      <div class="gt-card gt-feature-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="layout-grid"></i></div>
+        <h3 class="gt-h3">Smart project grouping</h3>
+        <p class="gt-muted">Pages cluster by intent, not by URL. Compare laptops in one project, apartments in another, even if you saved them all in the same afternoon.</p>
+      </div>
+      <div class="gt-card gt-feature-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="wand-2"></i></div>
+        <h3 class="gt-h3">AI-generated next actions</h3>
+        <p class="gt-muted">Each project gets a concrete next step: "Shortlist to two finalists," "Verify Linux compatibility," "Schedule tours before the lease ends."</p>
+      </div>
+      <div class="gt-card gt-feature-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="table-2"></i></div>
+        <h3 class="gt-h3">Research comparison</h3>
+        <p class="gt-muted">Auto-built comparison tables surface the one fact you're missing — without inventing data. Missing values are labeled, never guessed.</p>
+      </div>
+      <div class="gt-card gt-feature-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="history"></i></div>
+        <h3 class="gt-h3">Session recovery</h3>
+        <p class="gt-muted">Saved browser sessions become resumable workspaces. Close the laptop, come back next week, pick up exactly where your mind left off.</p>
+      </div>
+      <div class="gt-card gt-feature-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="shield"></i></div>
+        <h3 class="gt-h3">User-controlled privacy</h3>
+        <p class="gt-muted">You decide what gets saved, what gets summarized by AI, and what gets deleted. No silent history scraping. Ever.</p>
+      </div>
+      <div class="gt-card gt-feature-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="check-square"></i></div>
+        <h3 class="gt-h3">Action queue</h3>
+        <p class="gt-muted">All pending actions across all projects in one queue. Mark done, reopen, or skip — progress is tracked and visible.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ HOW IT WORKS ============ -->
+<section class="gt-section" id="how">
+  <div class="gt-container">
+    <div class="gt-section-head" data-reveal>
+      <span class="gt-eyebrow">How it works</span>
+      <h2 class="gt-h1 gt-section-title">Three steps from chaos to a clear plan.</h2>
+    </div>
+    <div class="gt-how-grid">
+      <div class="gt-how-card" data-reveal>
+        <div class="gt-how-num">01</div>
+        <div class="gt-how-icon"><i data-lucide="mouse-pointer-click"></i></div>
+        <h3 class="gt-h3">Collect selected tabs</h3>
+        <p class="gt-muted">Install the optional Chrome extension and push the tabs you actually care about — or paste URLs manually. Nothing is read automatically.</p>
+      </div>
+      <div class="gt-how-connector" aria-hidden="true"></div>
+      <div class="gt-how-card" data-reveal>
+        <div class="gt-how-num">02</div>
+        <div class="gt-how-icon"><i data-lucide="brain-circuit"></i></div>
+        <h3 class="gt-h3">Let AI organize your intent</h3>
+        <p class="gt-muted">GhostTab AI groups pages by goal, infers what you're trying to accomplish, and writes a summary plus a short list of next actions.</p>
+      </div>
+      <div class="gt-how-connector" aria-hidden="true"></div>
+      <div class="gt-how-card" data-reveal>
+        <div class="gt-how-num">03</div>
+        <div class="gt-how-icon"><i data-lucide="rocket"></i></div>
+        <h3 class="gt-h3">Resume with a clear plan</h3>
+        <p class="gt-muted">Open the project tomorrow or next week. Your goal, your pages, and your next step are right where you left them — waiting for you.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTERACTIVE DEMO CTA ============ -->
+<section class="gt-section" id="demo-cta">
+  <div class="gt-container">
+    <div class="gt-card gt-demo-cta-card" data-reveal>
+      <div class="gt-demo-cta-inner">
+        <div>
+          <span class="gt-eyebrow">No account needed</span>
+          <h2 class="gt-h1 gt-demo-cta-title">Try GhostTab AI on a real sample workspace.</h2>
+          <p class="gt-muted">Explore a laptop-research project, an apartment hunt, and a learning path — with goals, summaries, comparisons, and actions already in place.</p>
+        </div>
+        <a href="/demo/" class="gt-btn gt-btn-primary gt-btn-lg">
+          Open the Demo <i data-lucide="arrow-right"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PRIVACY ============ -->
+<section class="gt-section" id="privacy">
+  <div class="gt-container">
+    <div class="gt-section-head" data-reveal>
+      <span class="gt-eyebrow">Privacy</span>
+      <h2 class="gt-h1 gt-section-title">Your tabs are not our history.</h2>
+      <p class="gt-section-lead gt-muted">GhostTab AI is built around what you explicitly choose to save — not what your browser happens to be doing.</p>
+    </div>
+    <div class="gt-grid-3">
+      <div class="gt-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="eye-off"></i></div>
+        <h3 class="gt-h3">No silent access</h3>
+        <p class="gt-muted">The browser extension reads tabs only after you explicitly select them and click save. We never read your full browsing history.</p>
+      </div>
+      <div class="gt-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="database"></i></div>
+        <h3 class="gt-h3">What's stored</h3>
+        <p class="gt-muted">URLs you saved, optional notes you wrote, AI-generated goals and summaries, and timestamps. That's it.</p>
+      </div>
+      <div class="gt-card" data-reveal>
+        <div class="gt-feature-icon"><i data-lucide="trash-2"></i></div>
+        <h3 class="gt-h3">Deletable on demand</h3>
+        <p class="gt-muted">Delete any page, project, or session. Delete your account and everything goes with it. No dark patterns.</p>
+      </div>
+    </div>
+    <div class="gt-privacy-note gt-muted" data-reveal>
+      <i data-lucide="info"></i>
+      <span>GhostTab AI does not fetch arbitrary URLs from the backend unless the operator explicitly enables a hardened metadata fetcher with SSRF defenses. By default, only URLs and your notes are stored.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ FINAL CTA ============ -->
+<section class="gt-section gt-final-cta-section">
+  <div class="gt-container">
+    <div class="gt-final-cta" data-reveal>
+      <h2 class="gt-display gt-final-cta-title">Your open tabs are<br/><span class="gradient-text">unfinished work.</span></h2>
+      <p class="gt-muted gt-final-cta-sub">Save them. Group them. Finish them.</p>
+      <div class="gt-final-cta-actions">
+        <a href="/auth/signup/" class="gt-btn gt-btn-primary gt-btn-lg"><i data-lucide="sparkles"></i> Build My Workspace</a>
+        <a href="/demo/" class="gt-btn gt-btn-ghost gt-btn-lg">Explore the Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% include "partials/footer.html" %}
+
+<style>
+  /* ---- Hero ---- */
+  .gt-hero { position: relative; padding: var(--gt-space-9) 0 var(--gt-space-8); overflow: hidden; }
+  .gt-hero-bg {
+    position: absolute; inset: 0;
+    background: var(--gt-grad-hero-bg);
+    pointer-events: none;
+  }
+  .gt-hero-bg::after {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 60px 60px;
+    mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 0%, transparent 70%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 50% at 50% 0%, black 0%, transparent 70%);
+  }
+  .gt-hero-inner {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: 1.05fr 1fr; gap: var(--gt-space-8);
+    align-items: center;
+  }
+  .gt-hero-eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-full); }
+  .gt-hero-headline { margin: var(--gt-space-5) 0 var(--gt-space-4); }
+  .gt-hero-sub { font-size: 1.15rem; max-width: 540px; margin-bottom: var(--gt-space-6); }
+  .gt-hero-cta { display: flex; gap: var(--gt-space-3); flex-wrap: wrap; }
+  .gt-hero-meta { display: flex; gap: var(--gt-space-5); flex-wrap: wrap; margin-top: var(--gt-space-6); font-size: 0.85rem; }
+  .gt-hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+  .gt-hero-meta .lucide { width: 14px; height: 14px; color: var(--gt-cyan); }
+
+  /* ---- Preview card ---- */
+  .gt-hero-preview { position: relative; }
+  .gt-preview-glow {
+    position: absolute; inset: -10% -10% -20% -10%;
+    background: radial-gradient(ellipse at 60% 40%, rgba(138, 92, 246, 0.20), transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(94, 234, 212, 0.18), transparent 60%);
+    filter: blur(40px);
+    z-index: -1;
+  }
+  .gt-preview-card {
+    background: var(--gt-bg-elev-2);
+    border: 1px solid var(--gt-border-strong);
+    border-radius: var(--gt-r-lg);
+    box-shadow: var(--gt-shadow-lg);
+    overflow: hidden;
+  }
+  .gt-preview-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 16px;
+    background: var(--gt-bg-elev-3);
+    border-bottom: 1px solid var(--gt-border);
+  }
+  .gt-preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .gt-preview-title { margin-left: 12px; font-size: 0.78rem; color: var(--gt-text-soft); font-family: var(--gt-font-mono); }
+  .gt-preview-body { padding: var(--gt-space-5); }
+  .gt-preview-stage { min-height: 260px; display: flex; flex-direction: column; gap: var(--gt-space-4); }
+  .gt-step-label { font-size: 0.78rem; color: var(--gt-text-soft); text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; }
+  .gt-preview-step { animation: gt-fade-up 0.5s var(--gt-ease-out) both; }
+  .gt-preview-step.gt-hidden { display: none; }
+
+  /* Tabs cluster */
+  .gt-tabs-cluster { display: flex; flex-wrap: wrap; gap: 8px; }
+  .gt-tab-chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    background: var(--gt-surface);
+    border: 1px solid var(--gt-border);
+    border-radius: var(--gt-r-md);
+    font-size: 0.84rem; color: var(--gt-text);
+    animation: gt-tab-fly 0.5s var(--gt-ease-spring) both;
+    transition: transform 0.3s var(--gt-ease-out), background 0.3s var(--gt-ease-out), border-color 0.3s var(--gt-ease-out);
+  }
+  .gt-tab-chip:nth-child(1) { animation-delay: 0ms; }
+  .gt-tab-chip:nth-child(2) { animation-delay: 80ms; }
+  .gt-tab-chip:nth-child(3) { animation-delay: 160ms; }
+  .gt-tab-chip:nth-child(4) { animation-delay: 240ms; }
+  .gt-tab-chip:nth-child(5) { animation-delay: 320ms; }
+  .gt-tab-chip:nth-child(6) { animation-delay: 400ms; }
+  .gt-tab-chip:nth-child(7) { animation-delay: 480ms; }
+  .gt-tab-chip:nth-child(8) { animation-delay: 560ms; }
+  .gt-tab-fav { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .gt-tab-chip.is-grouping { transform: translate(var(--gx), var(--gy)) scale(0.92); border-color: var(--gt-border-accent); }
+
+  /* Grouped projects */
+  .gt-projects-cluster { display: flex; flex-direction: column; gap: 10px; }
+  .gt-mini-project {
+    background: var(--gt-surface);
+    border: 1px solid var(--gt-border);
+    border-left: 3px solid var(--tag, var(--gt-accent));
+    border-radius: var(--gt-r-md);
+    padding: 12px 14px;
+    animation: gt-fade-up 0.4s var(--gt-ease-out) both;
+  }
+  .gt-mini-project:nth-child(1) { animation-delay: 100ms; }
+  .gt-mini-project:nth-child(2) { animation-delay: 220ms; }
+  .gt-mini-project:nth-child(3) { animation-delay: 340ms; }
+  .gt-mini-project-head { display: flex; align-items: center; gap: 10px; }
+  .gt-mini-tag { font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; background: rgba(255,255,255,0.05); color: var(--tag, var(--gt-accent)); border: 1px solid color-mix(in srgb, var(--tag, var(--gt-accent)) 30%, transparent); }
+  .gt-mini-title { font-size: 0.9rem; font-weight: 500; color: var(--gt-text); }
+
+  /* Goal + actions */
+  .gt-goal-card {
+    background: var(--gt-grad-violet-deep);
+    border: 1px solid var(--gt-border-accent);
+    border-radius: var(--gt-r-md);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .gt-goal-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--gt-accent-soft); font-weight: 600; }
+  .gt-goal-text { font-size: 0.92rem; color: var(--gt-text); margin-top: 4px; line-height: 1.45; }
+  .gt-actions-mini { display: flex; flex-direction: column; gap: 8px; }
+  .gt-action-mini {
+    display: flex; align-items: flex-start; gap: 8px;
+    font-size: 0.86rem; color: var(--gt-text-muted);
+    padding: 8px 10px; border-radius: var(--gt-r-sm);
+    animation: gt-fade-up 0.4s var(--gt-ease-out) both;
+  }
+  .gt-action-mini:nth-child(1) { animation-delay: 200ms; }
+  .gt-action-mini:nth-child(2) { animation-delay: 360ms; }
+  .gt-action-mini:nth-child(3) { animation-delay: 520ms; }
+  .gt-action-mini .lucide { width: 16px; height: 16px; color: var(--gt-text-soft); flex-shrink: 0; margin-top: 2px; }
+  .gt-action-mini.is-done { color: var(--gt-success); }
+  .gt-action-mini.is-done .lucide { color: var(--gt-success); }
+
+  .gt-preview-controls { display: flex; align-items: center; gap: var(--gt-space-3); margin-top: var(--gt-space-4); }
+  .gt-preview-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-sm); font-size: 0.78rem; color: var(--gt-text-muted); }
+  .gt-preview-btn:hover { background: var(--gt-surface-hover); color: var(--gt-text); }
+  .gt-preview-btn .lucide { width: 14px; height: 14px; }
+  .gt-preview-progress { flex: 1; height: 3px; background: var(--gt-surface); border-radius: 999px; overflow: hidden; }
+  .gt-preview-progress-bar { height: 100%; width: 0%; background: var(--gt-grad-violet-cyan); transition: width 0.3s linear; }
+
+  /* ---- Sections ---- */
+  .gt-section { padding: var(--gt-space-9) 0; }
+  .gt-section-head { max-width: 720px; margin: 0 auto var(--gt-space-7); text-align: center; }
+  .gt-section-head[data-reveal] { opacity: 0; transform: translateY(20px); transition: opacity 0.6s var(--gt-ease-out), transform 0.6s var(--gt-ease-out); }
+  .gt-section-head.is-revealed { opacity: 1; transform: translateY(0); }
+  .gt-section-title { margin: var(--gt-space-3) 0 var(--gt-space-4); }
+  .gt-section-lead { font-size: 1.05rem; }
+
+  /* Reveal base */
+  [data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity 0.7s var(--gt-ease-out), transform 0.7s var(--gt-ease-out); }
+  [data-reveal].is-revealed { opacity: 1; transform: translateY(0); }
+
+  /* Problem grid */
+  .gt-problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gt-space-5); }
+  .gt-problem-card { text-align: center; }
+  .gt-problem-icon { width: 48px; height: 48px; margin: 0 auto var(--gt-space-3); display: flex; align-items: center; justify-content: center; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); color: var(--gt-danger); }
+  .gt-problem-icon .lucide { width: 22px; height: 22px; }
+  .gt-solution-arrow { text-align: center; margin: var(--gt-space-6) 0; color: var(--gt-accent-soft); animation: gt-float 2s ease-in-out infinite; }
+  .gt-solution-arrow .lucide { width: 32px; height: 32px; }
+  .gt-solution-card { padding: var(--gt-space-7); }
+  .gt-solution-inner { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gt-space-7); align-items: center; }
+  .gt-solution-title { margin: var(--gt-space-3) 0 var(--gt-space-4); }
+  .gt-solution-visual { display: flex; align-items: center; gap: var(--gt-space-3); }
+  .gt-visual-before { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+  .gt-tab-mini { padding: 6px 10px; background: var(--gt-bg-elev-1); border: 1px solid var(--gt-border); border-radius: var(--gt-r-sm); font-family: var(--gt-font-mono); font-size: 0.74rem; color: var(--gt-text-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .gt-visual-arrow { color: var(--gt-accent-soft); }
+  .gt-visual-arrow .lucide { width: 24px; height: 24px; }
+  .gt-visual-after { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+  .gt-after-card { padding: 10px 12px; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-sm); font-size: 0.78rem; color: var(--gt-text-muted); display: flex; align-items: center; gap: 8px; }
+
+  /* Features */
+  .gt-feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--gt-space-5); }
+  .gt-feature-card { padding: var(--gt-space-6); }
+  .gt-feature-icon { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: var(--gt-grad-violet-deep); border: 1px solid var(--gt-border-accent); border-radius: var(--gt-r-md); color: var(--gt-accent-soft); margin-bottom: var(--gt-space-4); }
+  .gt-feature-icon .lucide { width: 22px; height: 22px; }
+
+  /* How it works */
+  .gt-how-grid { display: grid; grid-template-columns: 1fr 60px 1fr 60px 1fr; gap: 0; align-items: stretch; }
+  .gt-how-card { padding: var(--gt-space-6); text-align: center; }
+  .gt-how-num { font-family: var(--gt-font-mono); font-size: 0.78rem; color: var(--gt-accent-soft); margin-bottom: var(--gt-space-3); }
+  .gt-how-icon { width: 48px; height: 48px; margin: 0 auto var(--gt-space-3); display: flex; align-items: center; justify-content: center; background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); color: var(--gt-cyan); }
+  .gt-how-icon .lucide { width: 22px; height: 22px; }
+  .gt-how-connector { display: flex; align-items: center; justify-content: center; color: var(--gt-text-dim); }
+  .gt-how-connector::before { content: ''; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--gt-border-strong), transparent); }
+
+  /* Demo CTA */
+  .gt-demo-cta-card { padding: var(--gt-space-7); background: var(--gt-grad-violet-deep); border-color: var(--gt-border-accent); }
+  .gt-demo-cta-inner { display: flex; align-items: center; justify-content: space-between; gap: var(--gt-space-6); }
+  .gt-demo-cta-title { margin: var(--gt-space-3) 0 var(--gt-space-4); max-width: 640px; }
+
+  /* Privacy note */
+  .gt-privacy-note { display: flex; align-items: flex-start; gap: 10px; margin-top: var(--gt-space-5); padding: var(--gt-space-4); background: var(--gt-surface); border: 1px solid var(--gt-border); border-radius: var(--gt-r-md); font-size: 0.88rem; }
+  .gt-privacy-note .lucide { width: 18px; height: 18px; color: var(--gt-cyan); flex-shrink: 0; margin-top: 2px; }
+
+  /* Final CTA */
+  .gt-final-cta-section { padding: var(--gt-space-9) 0; }
+  .gt-final-cta { text-align: center; max-width: 720px; margin: 0 auto; }
+  .gt-final-cta-title { margin-bottom: var(--gt-space-4); }
+  .gt-final-cta-sub { font-size: 1.1rem; margin-bottom: var(--gt-space-6); }
+  .gt-final-cta-actions { display: flex; justify-content: center; gap: var(--gt-space-3); flex-wrap: wrap; }
+
+  @media (max-width: 1024px) {
+    .gt-hero-inner { grid-template-columns: 1fr; }
+    .gt-solution-inner { grid-template-columns: 1fr; }
+    .gt-how-grid { grid-template-columns: 1fr; }
+    .gt-how-connector { display: none; }
+  }
+  @media (max-width: 768px) {
+    .gt-problem-grid, .gt-feature-grid { grid-template-columns: 1fr; }
+    .gt-solution-visual { flex-direction: column; }
+    .gt-visual-arrow { transform: rotate(90deg); }
+    .gt-demo-cta-inner { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+
+<script>
+  // ---- Hero preview animation ----
+  (function() {
+    const preview = document.getElementById('heroPreview');
+    if (!preview) return;
+    const steps = preview.querySelectorAll('.gt-preview-step');
+    const progressBar = document.getElementById('heroProgress');
+    const replayBtn = document.getElementById('heroReplay');
+    let timer = null;
+    let progressTimer = null;
+    let stepIdx = 0;
+
+    function showStep(idx) {
+      steps.forEach((s, i) => s.classList.toggle('gt-hidden', i !== idx));
+      // Re-trigger animation by toggling display
+      const cur = steps[idx];
+      cur.style.animation = 'none';
+      void cur.offsetWidth;
+      cur.style.animation = '';
+    }
+
+    function setProgress(pct) {
+      if (progressBar) progressBar.style.width = pct + '%';
+    }
+
+    function run() {
+      stepIdx = 0;
+      showStep(0);
+      setProgress(0);
+      clearInterval(progressTimer);
+      let elapsed = 0;
+      progressTimer = setInterval(() => {
+        elapsed += 100;
+        setProgress(Math.min(100, (elapsed / 9000) * 100));
+      }, 100);
+
+      timer = setInterval(() => {
+        stepIdx++;
+        if (stepIdx >= steps.length) {
+          clearInterval(timer);
+          // Hold last step
+          setTimeout(() => { setProgress(100); }, 400);
+          return;
+        }
+        showStep(stepIdx);
+      }, 3000);
+    }
+
+    replayBtn?.addEventListener('click', () => {
+      clearInterval(timer);
+      clearInterval(progressTimer);
+      run();
+    });
+
+    // Reduced motion: show all steps stacked? No, just hold step 3.
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      showStep(2);
+      setProgress(100);
+    } else {
+      run();
+    }
+  })();
+</script>
+{% endblock %}

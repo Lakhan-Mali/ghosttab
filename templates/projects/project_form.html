@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ form.title.value|default:"New project" }} — GhostTab AI{% endblock %}
+
+{% block body %}
+<div class="gt-app-layout">
+  {% include "partials/sidebar.html" with active_nav='new_project' %}
+
+  <div class="gt-app-main">
+    <header class="gt-mobile-topbar">
+      <button class="gt-icon-btn" id="mobileSidebarToggle" aria-label="Open sidebar"><i data-lucide="menu"></i></button>
+      <span class="gt-brand-text">GhostTab <span class="gt-brand-ai">AI</span></span>
+      <span></span>
+    </header>
+
+    <main class="gt-app-content">
+      <a href="/app/" class="gt-back-link"><i data-lucide="arrow-left"></i> Back to workspace</a>
+      <header class="gt-page-header">
+        <span class="gt-eyebrow">{% if is_new %}Create{% else %}Edit{% endif %} project</span>
+        <h1 class="gt-h1">{{ is_new|yesno:"Start a new project,Edit project" }}</h1>
+      </header>
+
+      <div class="gt-card gt-form-card">
+        <form method="post" class="gt-stack">
+          {% csrf_token %}
+          <div class="gt-field">
+            <label class="gt-label" for="id_title">Title</label>
+            <input type="text" id="id_title" name="title" class="gt-input" required value="{{ form.title.value|default:'' }}" placeholder="e.g. Find a 14-inch laptop for design work">
+            {% if form.title.errors %}<div class="gt-field-error">{{ form.title.errors|join:", " }}</div>{% endif %}
+          </div>
+          <div class="gt-field">
+            <label class="gt-label" for="id_goal">Goal <span class="gt-soft">(optional — AI can infer this)</span></label>
+            <textarea id="id_goal" name="goal" class="gt-textarea" rows="3" placeholder="What are you trying to accomplish?">{{ form.goal.value|default:'' }}</textarea>
+          </div>
+          <div class="gt-field">
+            <label class="gt-label" for="id_status">Status</label>
+            <select id="id_status" name="status" class="gt-select">
+              {% for code, label in form.status.field.choices %}
+                <option value="{{ code }}" {% if form.status.value == code %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="gt-form-actions">
+            <button type="submit" class="gt-btn gt-btn-primary"><i data-lucide="check"></i> {{ is_new|yesno:"Create project,Save changes" }}</button>
+            <a href="{% if project %}/app/{{ project.id }}/{% else %}/app/{% endif %}" class="gt-btn gt-btn-ghost">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+  .gt-back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--gt-text-muted); font-size: 0.84rem; margin-bottom: var(--gt-space-4); }
+  .gt-back-link:hover { color: var(--gt-text); }
+  .gt-back-link .lucide { width: 14px; height: 14px; }
+  .gt-page-header { margin-bottom: var(--gt-space-6); }
+  .gt-page-header .gt-h1 { margin: 6px 0 0; }
+  .gt-form-card { max-width: 640px; }
+  .gt-form-actions { display: flex; gap: var(--gt-space-3); margin-top: var(--gt-space-2); }
+</style>
+
+<script>
+  // Sidebar logic is centralized in templates/partials/sidebar.html
+</script>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Privacy — GhostTab AI{% endblock %}
+
+{% block body %}
+{% include "partials/nav.html" %}
+
+<section class="gt-page">
+  <div class="gt-container gt-prose">
+    <header class="gt-page-header" style="margin: var(--gt-space-7) 0 var(--gt-space-6);">
+      <span class="gt-eyebrow">Trust</span>
+      <h1 class="gt-h1">Privacy & data handling</h1>
+      <p class="gt-muted">GhostTab AI is built around what you explicitly choose to save — not what your browser happens to be doing. Here's the full picture.</p>
+    </header>
+
+    <section id="data" class="gt-card" style="margin-bottom: var(--gt-space-5);">
+      <h2 class="gt-h3"><i data-lucide="database"></i> What we store</h2>
+      <ul class="gt-list">
+        <li><strong>URLs you saved</strong> — the page address, optionally a title, your private note, and any text you pasted.</li>
+        <li><strong>AI outputs</strong> — goals, summaries, comparisons, and action items generated for your projects.</li>
+        <li><strong>Account data</strong> — email, display name, hashed password, and preferences (theme, motion settings).</li>
+        <li><strong>Session metadata</strong> — when you imported tabs, how many, and from which source (extension or bulk paste).</li>
+      </ul>
+      <p class="gt-muted" style="margin-top: var(--gt-space-3);">We do <strong>not</strong> store your full browsing history. The extension reads tabs only after you explicitly select them and click save.</p>
+    </section>
+
+    <section id="processing" class="gt-card" style="margin-bottom: var(--gt-space-5);">
+      <h2 class="gt-h3"><i data-lucide="cpu"></i> What's processed</h2>
+      <p>When you click "Summarize," "Generate actions," "Compare," or "Infer goal," GhostTab AI sends the saved page URLs, titles, and any pasted text to an LLM provider configured by the operator (OpenAI-compatible or Z.ai). The provider returns structured JSON which we validate, persist, and render in your workspace.</p>
+      <p class="gt-muted">We never send your account password, your account email, or any system data to the LLM provider. Page content is treated as untrusted input — we never execute instructions embedded in scraped text.</p>
+    </section>
+
+    <section id="fetching" class="gt-card" style="margin-bottom: var(--gt-space-5);">
+      <h2 class="gt-h3"><i data-lucide="shield"></i> Backend URL fetching</h2>
+      <p>By default, GhostTab AI does <strong>not</strong> fetch arbitrary URLs from the backend. We store the URL you gave us, plus your note. That's it.</p>
+      <p>If the operator explicitly enables the hardened metadata fetcher (env var <code class="gt-mono">GTAB_FETCH_METADATA=1</code>), the backend will fetch only the page title and favicon for newly added URLs, with the following defenses:</p>
+      <ul class="gt-list">
+        <li>Only http(s) schemes are allowed — no file://, ftp://, or javascript: URIs.</li>
+        <li>DNS resolution must not land on private, loopback, or link-local IP ranges (SSRF defense).</li>
+        <li>Maximum 3 redirect hops, each re-validated against the same SSRF rules.</li>
+        <li>Response size capped at 256 KiB; response must be HTML.</li>
+        <li>Short timeouts (6 seconds default).</li>
+      </ul>
+    </section>
+
+    <section id="deletion" class="gt-card" style="margin-bottom: var(--gt-space-5);">
+      <h2 class="gt-h3"><i data-lucide="trash-2"></i> Deletion</h2>
+      <ul class="gt-list">
+        <li><strong>Single page</strong> — remove it from the project detail page (trash icon on hover).</li>
+        <li><strong>Single action</strong> — remove it from the project detail page or the action queue.</li>
+        <li><strong>Whole project</strong> — delete from the project detail header. Removes all pages, actions, and AI analyses for that project.</li>
+        <li><strong>Your account and all data</strong> — contact <a href="mailto:{{ SUPPORT_EMAIL }}" class="gt-link">{{ SUPPORT_EMAIL }}</a> and we will wipe everything within 72 hours.</li>
+      </ul>
+    </section>
+
+    <section class="gt-card">
+      <h2 class="gt-h3"><i data-lucide="info"></i> What we don't claim</h2>
+      <ul class="gt-list">
+        <li>We do not claim end-to-end encryption of stored data — your projects are stored in the operator's database (SQLite or PostgreSQL).</li>
+        <li>We do not claim zero-knowledge AI processing — your saved page data is sent to the configured LLM provider when you trigger AI features.</li>
+        <li>We do not claim the AI is always right — summaries, comparisons, and actions can be wrong. Always verify before acting on AI output.</li>
+      </ul>
+    </section>
+  </div>
+</section>
+
+{% include "partials/footer.html" %}
+
+<style>
+  .gt-page { padding: var(--gt-space-5) 0 var(--gt-space-9); }
+  .gt-prose { max-width: var(--gt-maxw-prose); }
+  .gt-card h2 .lucide { width: 18px; height: 18px; color: var(--gt-accent-soft); vertical-align: -3px; margin-right: 6px; }
+  .gt-card h2 { margin-bottom: var(--gt-space-3); }
+  .gt-card p { line-height: 1.65; margin-bottom: var(--gt-space-3); }
+  .gt-list { padding-left: 20px; color: var(--gt-text-muted); line-height: 1.7; }
+  .gt-list li { margin-bottom: 6px; }
+  .gt-list strong { color: var(--gt-text); }
+  code.gt-mono { padding: 2px 6px; background: var(--gt-surface); border-radius: var(--gt-r-xs); font-size: 0.84rem; }
+</style>
+{% endblock %}
